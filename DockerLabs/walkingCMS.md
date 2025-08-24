@@ -2,7 +2,7 @@
 
 #### Descripción:
 
-Pequeño CTF en modo **easy** de dockerlabs.
+Pequeño Lab en modo **easy** de dockerlabs.
 
 #### Enlaces:
 
@@ -13,7 +13,11 @@ Pequeño CTF en modo **easy** de dockerlabs.
 
 ## Reconocimiento
 
-Entendemos que la máquina se encuentra desplegada en nuestra red (este caso es docker) y ya tendríamos una manera de identificar la ip del target. Por lo que se podría clasificar como un reconocimiento pasivo.
+Se asume que la máquina objetivo se encuentra correctamente desplegada dentro de nuestra red de laboratorio (en este caso, utilizando Docker).
+Dado que la dirección IP del objetivo es proporcionada o fácilmente identificable dentro del entorno controlado, esta fase puede clasificarse como **reconocimiento pasivo**.
+
+En un escenario real, el reconocimiento pasivo se orienta a recopilar información sin interactuar directamente con el sistema objetivo (por ejemplo, utilizando fuentes OSINT, registros públicos o información de infraestructura).
+En este caso particular, al tratarse de un laboratorio aislado, la obtención de la IP se considera suficiente para dar inicio a la fase de enumeración activa.
 
 ![enter image description here](https://i.imgur.com/3XmtBs3.png)
 
@@ -21,17 +25,35 @@ Entendemos que la máquina se encuentra desplegada en nuestra red (este caso es 
 
 ## Escaneo
 
-Bueno primeramente deberíamos tirarnos un escaneo general, en este caso usaremos el gran **nmap** donde estaremos revisando los servicios ejecutándose en los puertos del **target** y así tener un panorama más amplio sobre nuestra máquina.
+Como primer paso, se realizó un escaneo general de puertos y servicios con la herramienta **Nmap**, con el objetivo de identificar qué servicios se encuentran expuestos en el sistema objetivo (target) y obtener un panorama inicial de la superficie de ataque.
+
+El comando ejecutado fue el siguiente:
 
     nmap -p- --open -sC -sC -sV --min-rate 5000 -n -Pn 172.17.0.2
 
-Entendemos por **target** la IP de nuestra máquina víctima, que en este caso sería **172.17.0.2**
+- **-p-** → Escanea todos los puertos TCP (1 al 65535).
+
+- **--open** → Muestra únicamente los puertos abiertos.
+
+- **-sC** → Ejecuta los scripts por defecto de Nmap (NSE) para detección básica de vulnerabilidades y configuraciones inseguras.
+
+- **-sV** → Intenta identificar la versión de los servicios en ejecución.
+
+- **--min-rate** 5000 → Acelera el escaneo estableciendo un mínimo de 5000 paquetes por segundo.
+
+- **-n** → Evita la resolución DNS para mayor rapidez.
+
+- **-Pn** → Omite la fase de descubrimiento de host (se asume que el host está activo).
+
+- **172.17.0.2** → Dirección IP asignada a la máquina víctima dentro del entorno Docker.
 
 ![enter image description here](https://i.imgur.com/1WvtOWR.png)
 
 ### Resultados del escaneo
 
-Podremos observar que esta máquina tiene un puerto **80/tcp open http** lo que indicaría que hay una página web ejecutándose en este puerto. Podríamos acceder por medio de `http://172.17.0.2` y verificar que hay un servicio web en efecto.
+El escaneo realizado con Nmap reveló que el puerto **80/tcp** se encuentra abierto y asociado al servicio HTTP. Esto indica la presencia de un servidor web en ejecución dentro del objetivo.
+
+Con esta información inicial, se procedió a validar el hallazgo accediendo mediante un navegador a la dirección: `http://172.17.0.2` De esta manera, se confirma la existencia de un servicio web activo en el sistema. A partir de este punto, se iniciará la fase de enumeración web, con el fin de identificar posibles directorios ocultos, archivos sensibles o vulnerabilidades presentes en la aplicación expuesta. que hay un servicio web en efecto.
 
 ![enter image description here](https://i.imgur.com/RAoQPtY.png)
 
@@ -39,21 +61,25 @@ Podremos observar que esta máquina tiene un puerto **80/tcp open http** lo que 
 
 ### Enumeración
 
-Lo bacano de ahora es identificar qué posibles subdirectorios podriamos usar para entrar o explotar vulnerabilidades en nuestro target, en esta ocasión se utiliza gobuster para encontrar rutas interesantes.
+El objetivo de esta fase es detectar posibles rutas ocultas o sensibles que puedan ser utilizadas para obtener información adicional del sistema o ser explotadas como vectores de ataque.
+
+Para esta tarea se empleó la herramienta **Gobuster**, la cual permite realizar un ataque de fuerza bruta sobre el árbol de directorios utilizando listas de palabras previamente definidas.
 
     gobuster dir -u "http://172.17.0.2" -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt  -t 20 -x php,txt,html,php.bak
 
 **Nota**: Podríamos tener en cuenta las siguientes consideraciones antes de usar el gobuster:
 
-- La seclists es un directorio genérico de diccionarios que se pueden instalar en parrot y kali utilizando `sudo apt install seclists`
-- -x es para definir las extensiones que queremos encontrar al escanear la web.
+- **seclists** → Es un directorio genérico de diccionarios que se pueden instalar en parrot y kali utilizando `sudo apt install seclists`
+- **-x** → Es para definir las extensiones que queremos encontrar al escanear la web.
 
 ![enter image description here](https://i.imgur.com/Acs91Dy.png)
 
-Después de la ejecución del comando el gobuster arroja algunos directorios, en este caso podemos identificar uno que nos informa que hay un CMS de wordpress ejecutándose en `http://172.17.0.2/wordpress` por lo que si nos dirigimos al enlace visualizaremos una página de inicio.
+Tras la ejecución de Gobuster, se identificaron varios directorios accesibles dentro del servidor web. Entre ellos, uno de especial interés corresponde a `http://172.17.0.2/wordpress` por lo que si nos dirigimos al enlace visualizaremos una página de inicio.
+
 ![enter image description here](https://i.imgur.com/qAyX6Nu.png)
 
-Desde aquí pueden haber diferentes maneras de abordar esta situación, personalmente se tomó la desición de hacer un escaneo, primero con wpscan para identificar vulnerabilidades. A continuación:
+Una vez identificado el directorio `/wordpress`, se determinó que el servicio corresponde a un CMS WordPress.
+Dado que este tipo de plataformas son propensas a vulnerabilidades relacionadas con su versión, plugins y temas instalados, se decidió realizar un análisis de seguridad empleando la herramienta **WPScan**.
 
     wpscan --url "http://172.17.0.2/wordpress" --enumerate u, vp
 
