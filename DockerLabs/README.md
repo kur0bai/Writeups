@@ -33,6 +33,7 @@ Cada máquina o reto tendrá su propio directorio con el writeup en formato Mark
 | #   | Máquina / Reto | Categoría | Estado  | Enlace                   |
 | --- | -------------- | --------- | ------- | ------------------------ |
 | 1   | walkingCMS     | Web       | ✅ Done | [Writeup](walkingCMS.md) |
+| 2   | Pinguinazo     | Web       | ✅ Done | [Writeup](pinguinazo.md) |
 
 _(iré actualizando conforme vaya resolviendo más laboratorios)_
 
