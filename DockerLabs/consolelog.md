@@ -45,30 +45,36 @@ Con **Gobuster**:
 gobuster dir -u "http://172.17.0.2"   -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt   -t 20 -x php,txt,html,php.bak
 ```
 
-El resultado arrojó información con respecto al backend y un directorio que al parecer contiene los archivos javascript del frontend.
+El escaneo reveló un directorio que contiene archivos JavaScript del frontend y referencias a un endpoint llamado `/recurso`.
 
 ![Gobuster](https://i.imgur.com/zmVJle6.png)
 
-Por otro lado, se inspeccionó la página alojada en el puerto y se encontró una aplicación bastante sencilla pero al inspeccionarla, se hayó un mensaje en consola haciendo referencia a un directorio llamado recurso y un token.
+Al inspeccionar la aplicación web en el navegador, se detectó un mensaje en la consola que hacía referencia a un directorio `recurso` y a un token esperado por el backend.
 
-![Gobuster](https://i.imgur.com/bC2z0KO.png)
+![Console message](https://i.imgur.com/bC2z0KO.png)
 
-Al inspeccionar el directorio del servidor backend se encontró una vulnerabilidad de Directory Listing donde se pudo inspeccionar los archivos dentro de la raiz del mismo.
+Posteriormente, la revisión del servidor mostró que el directorio del backend tenía **Directory Listing** habilitado, permitiendo la lectura directa de ficheros en la raíz del servicio.
 
-![Gobuster](https://i.imgur.com/QwUb4sa.png)
+![Directory Listing](https://i.imgur.com/QwUb4sa.png)
 
-Revisando el contenido de server.js se encuentra el siguiente código de una API con método POST y el endpoint de `/recurso`
+Dentro de los archivos expuestos se encontró `server.js`, que implementa un endpoint `POST /recurso`.
 
-![Gobuster](https://i.imgur.com/ZNjSEUB.png)
+![server.js](https://i.imgur.com/ZNjSEUB.png)
 
-Podemos observar que el endpoint no está sanitizado y la clave secreta queda expuesta en respuesta al token esperado: `tokentraviesito` que se encuentra hardcoded, es decir la clave que obtendríamos sería `lapassworddebackupmaschingonadetodas` desde aquí ya podríamos intentar conseguir un usuario que haga match con esta password.
+El endpoint compara un token recibido con un valor **hardcoded** (`tokentraviesito`) y, en caso de coincidencia, devuelve en respuesta una contraseña en texto claro: `lapassworddebackupmaschingonadetodas`.
 
-**NOTA:** Si no se hubiera revisado con el Directory Listing, haciendo un post a el endpoint de recurso con el la key de token en el body, igual hubiésemos obtenido la password.
+> **Observación:** incluso sin listar directorios, un `POST` correctamente formado a `/recurso` con el token en el body habría devuelto la contraseña.
 
-![Gobuster](https://i.imgur.com/XmITKDK.png)
-![Gobuster](https://i.imgur.com/A9pU7yY.png)
+Ejemplo PoC (conceptual):
 
-https://imgur.com/ZNjSEUB
+```bash
+curl -s -X POST http://172.17.0.2/recurso   -H 'Content-Type: application/json'   -d '{"token":"tokentraviesito"}'
+```
+
+Evidencia de la respuesta del endpoint:
+
+![Respuesta1](https://i.imgur.com/XmITKDK.png)
+![Respuesta2](https://i.imgur.com/A9pU7yY.png)
 
 ---
 
@@ -76,7 +82,11 @@ https://imgur.com/ZNjSEUB
 
 Se consideraró realizar un ataque de fuerza bruta con Hydra para intentar encontrar el usuario que coincidiera con la password. Afortunadamente, después de varios intentos se tuvo éxito y hubo una coincidencia.
 
-![Gobuster](https://i.imgur.com/UPEkHak.png)
+```bash
+hydra -L /usr/share/wordlists/rockyou.txt -p "lapassworddebackupmaschingonadetodas" ssh://172.17.0.2:5000 -t 4
+```
+
+![Hydra](https://i.imgur.com/UPEkHak.png)
 
 Para tener en cuenta; se utilizaron diferentes diccionarios, desde los clásicos de la seclists hasta el rockyou, la idea es intentar con varios siempre y cuando el target no tenga protección contra bruteforce y blacklists.
 
@@ -88,7 +98,7 @@ Teniendo el usuario `lovely` y su password, se ingresa al ssh para entrar a la m
 
 ## 🔝 Escalación de privilegios
 
-Se buscaron binarios con permisos SUID:
+Para escalar privilegios se realizó un inventario de binarios con el bit **SUID** establecido:
 
 ```bash
 find / -perm -4000 2>/dev/null
@@ -96,19 +106,21 @@ find / -perm -4000 2>/dev/null
 
 ![SUID](https://i.imgur.com/IpIBceK.png)
 
-Aunque algunos binarios no eran explotables, se observó `/usr/bin/nano` en la lista.  
-Al ejecutar:
+Se identificó `/usr/bin/nano` con permisos SUID. En este laboratorio, ejecutar `nano` con SUID permitió editar ficheros sensibles del sistema con privilegios elevados.
+
+Comando empleado para explotar la condición:
 
 ```bash
 /usr/bin/nano /etc/passwd -l
 ```
 
-Se pudo hacer edición del archivo y se removió la "x" del usuario root, esto con el fin de dejarlo sin password.
+Al editar `/etc/passwd` se eliminó la marca de contraseña (la `x`) del usuario `root` — procedimiento realizado únicamente en el entorno de laboratorio con fines demostrativos. Tras guardar los cambios se ejecutó `su` y se obtuvo acceso como `root` sin requerir contraseña.
 
-![SudoNano](https://i.imgur.com/Pz3HDD0.png)
+![Editar /etc/passwd con nano SUID](https://i.imgur.com/Pz3HDD0.png)
+![Obtener root](https://i.imgur.com/QPgVRQU.png)
 
-Al guardar nuevamente los cambios, se ejecutó el `su` para conseguir el super user root y al no tener password, el sistema omite el input.
+**Resultado:** compromiso total de la máquina (user + root).
 
-![SudoNano](https://i.imgur.com/QPgVRQU.png)
+## Conclusión breve
 
-Con esto la máquina queda completamente pwned.
+La combinación de ficheros expuestos, secretos embebidos en el código y la presencia de un binario SUID explotable permitieron un compromiso completo de la máquina. Estas fallas son evitables mediante control de despliegue, gestión de secretos y revisión de configuraciones de privilegio.
