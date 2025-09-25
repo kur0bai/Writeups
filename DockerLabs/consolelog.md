@@ -1,8 +1,6 @@
 # Consolelog
 
-### Descripción
-
-Pequeña Máquina en modo **[easy](https://mega.nz/file/oGMWiKoJ#l02GwzicvsgLaczCjTSqaJNl5-NGajklpOY3A3Tu9to)** de Dockerlabs.
+Pequeña Máquina en modo **easy** de Dockerlabs.
 
 ---
 

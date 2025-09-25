@@ -1,8 +1,6 @@
 # Pinguinazo
 
-### Descripción
-
-Pequeño CTF en modo **[easy](https://mega.nz/file/oGMWiKoJ#l02GwzicvsgLaczCjTSqaJNl5-NGajklpOY3A3Tu9to)** de Dockerlabs.
+Pequeño CTF en modo **easy** de Dockerlabs.
 
 ---
 
