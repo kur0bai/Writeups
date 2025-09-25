@@ -37,7 +37,6 @@ Resultados principales:
 
 Se hizo una revisión de los puertos **80** y **433** en el navegador pero los servidores no suministraron información relevante.
 
-![Scan1](https://i.imgur.com/LbGgKHD.png)
 ![Scan1](https://i.imgur.com/YS628ZP.png)
 
 El siguiente paso fue buscar directorios y recursos ocultos con **Gobuster**:
