@@ -7,7 +7,7 @@ This repository serves as a personal knowledge base where I document my learning
 
 The repository is organized into folders based on the platform or source of the challenge:
 
-- **DockerLabs/** → Writeups from [Dockerlabs](https://dockerlabs.es/).
+- **DockerLabs/** → Writeups from [Dockerlabs](DockerLabs).
 - **HTB/** → Writeups from [Hack The Box](https://www.hackthebox.com/).
 - _(More folders will be added as I progress.)_
 
