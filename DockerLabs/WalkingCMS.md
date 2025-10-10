@@ -2,8 +2,6 @@
 
 Pequeño Lab en modo **easy** de dockerlabs.
 
-#### Enlaces:
-
 ---
 
 ## 🔎 Reconocimiento
