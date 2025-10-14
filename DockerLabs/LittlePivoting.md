@@ -139,7 +139,7 @@ hostname -I
 10.10.10.2 20.20.20.2
 ```
 
-Se desarrolló un pequeño script en base a un análisis básico de hosts pasando tres optetos como base y se mandó a la máquina trust para ejecutar el reconocimiento al igual que **chisel** el cual es una herramienta de tunelización para establecer la comunicación entre máquinas el cuál puede ser revisado desde [aquí](https://github.com/jpillora/chisel).
+Se desarrolló un pequeño script en base a un análisis básico de hosts pasando tres optetos como base y se mandó a la máquina trust para ejecutar el reconocimiento al igual que la herramienta [**chisel**](https://github.com/jpillora/chisel) y [**socat**](https://github.com/lilydjwg/socat) las cuales son herramientas de tunelización para establecer la comunicación entre máquinas el cuál.
 
 **hostScanner.sh**
 
@@ -178,17 +178,16 @@ Desde aquí hubo un pequeño problema de **_command not found_** al ejecutar en 
 
 Al haber identificado una segunda máquina dentro de los hosts de la máquina **_trust_** se creó un tunel que nos permita alcanzar esa segunda máquina desde la atacante
 
-- La máquina atacante (kali) ejecuta el chisel en modo server para abrir la conexión con el puerto **3434**.
+- Kali actuó como servidor `chisel` escuchando en el puerto **3434**.
   ![SUID](https://i.imgur.com/PoLSGlm.png)
 
-- La máquina **_trust_** ejecuta chisel en modo cliente para establecer el tunel, así la máquina atacante puede 'alcanzar' a la máquina **_inclusion_** 20.20.20.3 por medio de proxychains.
+- `trust` ejecutó `chisel client` hacia el servidor atacante para exponer un proxy SOCKS local que permitió alcanzar `inclusion` (`20.20.20.3`) a través de `proxychains`.
   ![SUID](https://i.imgur.com/pwDirmh.png)
 
-- Se configuraron las proxychains para recibir las conexiones del chisel por medio del puerto **1080** por lo que se editó el archivo `/etc/proxychains4.conf`
+- `proxychains4.conf` se ajustó para usar `127.0.0.1 1080` en `strict_chain`.
   ![SUID](https://i.imgur.com/nWspCI4.png)
-  Importante tener descomentada solo la última línea `127.0.0.1 1080` y el tipo de chain en `strict_chain`
 
-- Con la tool de **socat** se coloca en escucha por el puerto **1111** para que en un futuro pueda recibir información de otra máquina y a su vez enviarla al puerto **3434** de la máquina kali.
+- Se empleó `socat` en un host intermedio `trust` para reenviar conexiones hacia el puerto **3434** del servidor atacante.
   ![SUID](https://i.imgur.com/G2q5tfG.png)
 
 ## 📡 Escaneo **_inclusion_**
@@ -280,7 +279,7 @@ Con las credenciales descubiertas se puede acceder con proxychains al ssh de la 
 
 #### 📍 Tunneling (inclusion -> kali)
 
-- Dentro de la máquina **inclusion** con el usuario `manchi` se vuelve a implementar el comando `hostname -I` para encontrar los hosts y luego se puede ejecutar el script de **_hostScanner.sh_** para empezar a reconocer host a la máquina, el cual nos permite detectar la máquina **_upload_**.
+- Dentro de la máquina `inclusion` con el usuario `manchi` se vuelve a implementar el comando `hostname -I` para encontrar los hosts y luego se puede ejecutar el script de **_hostScanner.sh_** para empezar a reconocer host a la máquina, el cual nos permite detectar la máquina **_upload_**.
 
 ```bash
 hostname -I
@@ -293,7 +292,7 @@ hostname -I
 🐾 HOST FOUND - 30.30.30.3
 ```
 
-- Se ejecuta el chisel client para enviar a la máquina **trust** que escucha con **socat** usando el puerto **1111** que a su vez tunelea el tráfico a la máquina kali con el puerto **8090** para pasar nuevamente socks en lugar de algún puerto específico, esto permite a la máquina atacante (kali) poder alcanzar a la máquina **upload**.
+- Se ejecuta el chisel client para enviar a la máquina `trust` que escucha con **socat** usando el puerto **1111** que a su vez tunelea el tráfico a la máquina kali con el puerto **8090** para pasar nuevamente socks en lugar de algún puerto específico, esto permite a la máquina atacante (kali) poder alcanzar a la máquina `upload`.
   ![Wfuzz](https://i.imgur.com/U6Jd44l.png)
 
 - El server de chisel desde la máquina kali empieza a escuchar la nueva conexión por medio del túnel.
@@ -307,11 +306,11 @@ Se procede a ejecutar un _Nmap_ al nuevo host encontrado 30.30.30.3 sin embargo 
 
 ## 📂 Enumeración **_upload_**
 
-Accediendo al host desde la web se obtiene una web para subir archivos.
+Accediendo por HTTP a `30.30.30.3` se observó una interfaz para subida de ficheros y un directorio `uploads` indexable:
 
 ![Upload](https://i.imgur.com/13VxPFS.png)
 
-Se vuelve a realizar un análisis de directorios con **dirb** y se encuentra un solo directorio.
+`dirb` confirmó que `/uploads/` está disponible y listable:
 
 ```bash
 > proxychains dirb 'http://30.30.30.3' 2>/dev/null
@@ -346,11 +345,12 @@ DOWNLOADED: 4612 - FOUND: 2
 
 #### 📍 Tunneling (upload -> inclusion -> trust -> kali)
 
-Para hacer port forwarding entre la máquina **upload** y la máquina atacante se pasó utilizando socat como port forwader para abrir el puerto 443 y ejecutar una revershe shell desde la máquina **upload**
+Para permitir comunicación bidireccional entre `upload` y la máquina atacante se utilizó `socat` para reenviar el puerto **443** a través de los saltos intermedios, habilitando la ejecución de una reverse shell desde `upload` hacia Kali:
 
-- En nueva sesión con ssh, la máquina **inclusion** se puso a la escucha del puerto **443** y así mismo redirige el tráfico a la máquina **trust**
+- `inclusion` en escucha y reenvío del puerto **443** hacia `trust`.  
   ![Wfuzz](https://i.imgur.com/4WNcFKK.png)
-- En otra sesión con ssh, la máquina **trust** se puso a la escucha del puerto **443**, es decir recibe tráfico desde la máquina **inclusion** y a su vez lo redirige a la máquina atacante.
+
+- `trust` en escucha y reenvío del puerto **443** hacia la máquina atacante.  
   ![Wfuzz](https://i.imgur.com/L944HFz.png)
 
 ## 💥 Explotación **_upload_**
@@ -555,7 +555,7 @@ function printit ($string) {
 ?>
 ```
 
-Se carga el fichero con la ip y el puerto de la máquina atacante y se ingresa a uploads con el nombre del mismo para ejecutar la reverse shell, que debería pasar por entre las dos máquinas previas a **upload**, teniendo en cuenta que antes se debe poner a la escucha desde la máquina atacante.
+Se carga el fichero con la ip y el puerto de la máquina atacante y se ingresa a uploads con el nombre del mismo para ejecutar la reverse shell, que debería pasar por entre las dos máquinas previas a `upload`, teniendo en cuenta que antes se debe poner a la escucha desde la máquina atacante.
 
 ```bash
 sudo nc -nlvp 443
@@ -565,7 +565,7 @@ sudo nc -nlvp 443
 
 ![Upload](https://i.imgur.com/G4Rh85z.png)
 
-Si todos los túneles está correctamente implementados el reverse shell desde **upload** a la máquina atacante debería llegar sin problemas.
+Si todos los túneles está correctamente implementados el reverse shell desde `upload` a la máquina atacante debería llegar sin problemas.
 
 ## 🔝 Escalación de privilegios **_upload_**
 
@@ -574,3 +574,7 @@ Lo siguiente es escalar los privilegios por lo que se detecta buscando binarios 
 ![Upload](https://i.imgur.com/7GivQNZ.png)
 
 Con esto se consigue vulnerar la máquina final.
+
+### Impacto
+
+La combinación de los vectores descritos permitió control total de los hosts y movimiento lateral dentro de la topología del laboratorio. En un entorno de producción las consecuencias equivaldrían a una **comprometida cadena de confianza**, acceso a datos sensibles y capacidad de persistencia.
