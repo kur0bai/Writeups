@@ -30,13 +30,14 @@ Cada máquina o reto tendrá su propio directorio con el writeup en formato Mark
 
 ## ✅ Lista de Writeups
 
-| #   | Máquina / Reto | Categoría | Estado  | Enlace                   |
-| --- | -------------- | --------- | ------- | ------------------------ |
-| 1   | WalkingCMS     | Web       | ✅ Done | [Writeup](WalkingCMS.md) |
-| 2   | Pinguinazo     | Web       | ✅ Done | [Writeup](Pinguinazo.md) |
-| 3   | Consolelog     | Web       | ✅ Done | [Writeup](Consolelog.md) |
-| 4   | Pingpong       | Web       | ✅ Done | [Writeup](Pingpong.md)   |
-| 5   | Memesploit     | Web       | ✅ Done | [Writeup](Memesploit.md) |
+| #   | Máquina / Reto | Categoría | Estado  | Enlace                       |
+| --- | -------------- | --------- | ------- | ---------------------------- |
+| 1   | WalkingCMS     | Web       | ✅ Done | [Writeup](WalkingCMS.md)     |
+| 2   | Pinguinazo     | Web       | ✅ Done | [Writeup](Pinguinazo.md)     |
+| 3   | Consolelog     | Web       | ✅ Done | [Writeup](Consolelog.md)     |
+| 4   | Pingpong       | Web       | ✅ Done | [Writeup](Pingpong.md)       |
+| 5   | Memesploit     | Web       | ✅ Done | [Writeup](Memesploit.md)     |
+| 6   | LittlePivoting | Web       | ✅ Done | [Writeup](LittlePivoting.md) |
 
 _(iré actualizando conforme vaya resolviendo más laboratorios)_
 
