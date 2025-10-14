@@ -1,10 +1,16 @@
-# walkingCMS
+# WalkingCMS
 
 Pequeño Lab en modo **easy** de dockerlabs.
 
+- [Reconocimiento](#reconocimiento)
+- [Escaneo](#escaneo)
+- [Enumeración](#enumeración)
+- [Explotación](#explotación)
+- [Escalada de privilegios](#escalada-de-privilegios)
+
 ---
 
-## 🔎 Reconocimiento
+## Reconocimiento
 
 Se asume que la máquina objetivo se encuentra correctamente desplegada dentro de nuestra red de laboratorio (en este caso, utilizando Docker).
 Dado que la dirección IP del objetivo es proporcionada o fácilmente identificable dentro del entorno controlado, esta fase puede clasificarse como **reconocimiento pasivo**.
@@ -16,7 +22,7 @@ En este caso particular, al tratarse de un laboratorio aislado, la obtención de
 
 ---
 
-## 📡 Escaneo
+## Escaneo
 
 Como primer paso, se realizó un escaneo general de puertos y servicios con la herramienta **Nmap**, con el objetivo de identificar qué servicios se encuentran expuestos en el sistema objetivo (target) y obtener un panorama inicial de la superficie de ataque.
 
@@ -52,7 +58,7 @@ Con esta información inicial, se procedió a validar el hallazgo accediendo med
 
 ---
 
-### 📂 Enumeración
+### Enumeración
 
 El objetivo de esta fase es detectar posibles rutas ocultas o sensibles que puedan ser utilizadas para obtener información adicional del sistema o ser explotadas como vectores de ataque.
 
@@ -94,7 +100,7 @@ Si analizamos nuevamente con el gobuster pero utilizando el directorio de wordpr
 
 ---
 
-## 💥 Explotación
+## Explotación
 
 A continuación, podremos notar que:
 
@@ -132,7 +138,7 @@ Aplicado sería:
 Luego de ejecutar el comando en la Web shell, conseguimos establecer conexión con nuestra máquina.
 ![enter image description here](https://i.imgur.com/dpYnHCI.png)
 
-### 🔝 Escalar privilegios
+### Escalada de privilegios
 
 Moviéndose al `/home`se pueden buscar archivos en la raíz que permitan ser explotados o ejecutados para conseguir el `root`de la máquina.
 

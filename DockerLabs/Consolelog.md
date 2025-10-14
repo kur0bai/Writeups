@@ -1,10 +1,16 @@
-# Consolelog
+# ConsoleLog
 
 Pequeña Máquina en modo **easy** de Dockerlabs.
 
+- [Reconocimiento](#reconocimiento)
+- [Escaneo](#escaneo)
+- [Enumeración](#enumeración)
+- [Explotación](#explotación)
+- [Escalada de privilegios](#escalada-de-privilegios)
+
 ---
 
-## 🔎 Reconocimiento
+## Reconocimiento
 
 La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
 Dado que la dirección IP es conocida o fácilmente identificable dentro de este entorno controlado, esta fase se clasifica como **reconocimiento pasivo**.
@@ -13,7 +19,7 @@ Dado que la dirección IP es conocida o fácilmente identificable dentro de este
 
 ---
 
-## 📡 Escaneo
+## Escaneo
 
 Se realizó un escaneo con **Nmap** para identificar puertos abiertos y servicios:
 
@@ -33,7 +39,7 @@ Resultados principales:
 
 ---
 
-## 📂 Enumeración
+## Enumeración
 
 El siguiente paso fue buscar directorios y recursos ocultos.
 
@@ -76,7 +82,7 @@ Evidencia de la respuesta del endpoint:
 
 ---
 
-## 💥 Explotación
+## Explotación
 
 Se consideraró realizar un ataque de fuerza bruta con Hydra para intentar encontrar el usuario que coincidiera con la password. Afortunadamente, después de varios intentos se tuvo éxito y hubo una coincidencia.
 
@@ -94,7 +100,7 @@ Teniendo el usuario `lovely` y su password, se ingresa al ssh para entrar a la m
 
 ---
 
-## 🔝 Escalación de privilegios
+## Escalada de privilegios
 
 Para escalar privilegios se realizó un inventario de binarios con el bit **SUID** establecido:
 

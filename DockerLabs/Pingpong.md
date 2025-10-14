@@ -2,9 +2,15 @@
 
 Máquina vulnerable en modo **medium** de Dockerlabs.
 
+- [Reconocimiento](#reconocimiento)
+- [Escaneo](#escaneo)
+- [Enumeración](#enumeración)
+- [Explotación](#explotación)
+- [Escalada de privilegios](#escalada-de-privilegios)
+
 ---
 
-## 🔎 Reconocimiento
+## Reconocimiento
 
 La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
 Dado que la dirección IP es conocida o fácilmente identificable dentro de este entorno controlado, esta fase se clasifica como **reconocimiento pasivo**.
@@ -13,7 +19,7 @@ Dado que la dirección IP es conocida o fácilmente identificable dentro de este
 
 ---
 
-## 📡 Escaneo
+## Escaneo
 
 Se realizó un escaneo con **Nmap** para identificar puertos abiertos y servicios:
 
@@ -33,7 +39,7 @@ Resultados principales:
 
 ---
 
-## 📂 Enumeración
+## Enumeración
 
 Se hizo una revisión de los puertos **80** y **433** en el navegador pero los servidores no suministraron información relevante.
 
@@ -57,7 +63,7 @@ Se pasó al puerto **5000** donde se hayó una aplicación para realizar pings a
 
 ---
 
-## 💥 Explotación
+## Explotación
 
 Gracias a que los resultados fueron positivos, se implementó una reverse shell con bash para conectar a la terminal.
 
@@ -66,7 +72,7 @@ Gracias a que los resultados fueron positivos, se implementó una reverse shell 
 
 ---
 
-## 🔝 Escalación de privilegios
+## Escalada de privilegios
 
 Después de implementar la reverse shell se analizó el entorno para validar cómo conseguir la escalada de privilegios.
 

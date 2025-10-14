@@ -2,9 +2,15 @@
 
 Máquina CTF vulnerable en modo **medium** de Dockerlabs.
 
+- [Reconocimiento](#reconocimiento)
+- [Escaneo](#escaneo)
+- [Enumeración](#enumeración)
+- [Explotación](#explotación)
+- [Escalada de privilegios](#escalada-de-privilegios)
+
 ---
 
-## 🔎 Reconocimiento
+## Reconocimiento
 
 La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
 Dado que la dirección IP es conocida o fácilmente identificable dentro de este entorno controlado, esta fase se clasifica como **reconocimiento pasivo**.
@@ -13,7 +19,7 @@ Dado que la dirección IP es conocida o fácilmente identificable dentro de este
 
 ---
 
-## 📡 Escaneo
+## Escaneo
 
 Se realizó un escaneo con **Nmap** para identificar puertos abiertos y servicios:
 
@@ -62,7 +68,7 @@ Service detection performed. Please report any incorrect results at https://nmap
 
 ---
 
-## 📂 Enumeración
+## Enumeración
 
 Se hizo una inspección del sitio web en el puerto **80** y se encontró una página animada con algunos textos que podrían ser claves.
 
@@ -132,7 +138,7 @@ Con esto se obtuvieron las credenciales del secret.
 
 ---
 
-## 💥 Explotación
+## Explotación
 
 Con las credenciales obtenidas se realiza el proceso de explotación ingresando a la terminal por medio del puerto abierto con ssh, el resultado fue el siguiente:
 
@@ -140,7 +146,7 @@ Con las credenciales obtenidas se realiza el proceso de explotación ingresando 
 
 ---
 
-## 🔝 Escalación de privilegios
+## Escalada de privilegios
 
 Se analizó el entorno para validar cómo conseguir la escalada de privilegios. Por lo que se buscaron binarios con permisos SUID:
 

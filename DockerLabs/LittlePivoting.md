@@ -2,9 +2,24 @@
 
 Máquina vulnerable en modo **medium** de Dockerlabs.
 
+- [Reconocimiento](#reconocimiento)
+- [Escaneo (trust)](#escaneo-trust)
+- [Enumeración (trust)](#enumeración-trust)
+- [Explotación (trust)](#explotación-trust)
+- [Escalada de privilegios (trust)](#escalada-de-privilegios-trust)
+- [Tunneling (trust -> kali)](#tunneling-trust---kali)
+- [Escaneo (inclusion)](#escaneo-inclusion)
+- [Enumeración (inclusion)](#enumeración-inclusion)
+- [Explotación (inclusion)](#explotación-inclusion)
+- [Tunneling (inclusion -> kali)](#tunneling-inclusion---kali)
+- [Enumeración (upload)](#enumeración-upload)
+- [Explotación (upload)](#explotación-upload)
+- [Tunneling (upload -> inclusion -> trust -> kali)](#tunneling-upload---inclusion---trust---kali)
+- [Escalada de privilegios (upload)](#escalada-de-privilegios-upload)
+
 ---
 
-## 🔎 Reconocimiento
+## Reconocimiento
 
 Las máquinas objetivo se encuentran correctamente desplegadas dentro de la red de laboratorio (en este caso, utilizando Docker).
 
@@ -26,7 +41,7 @@ Ending arp-scan 1.10.0: 256 hosts scanned in 1.966 seconds (130.21 hosts/sec). 1
 
 ---
 
-## 📡 Escaneo **_trust_**
+## Escaneo **_trust_**
 
 Se realizó un escaneo con **Nmap** para identificar puertos abiertos y servicios en la **maquina trust**:
 
@@ -57,7 +72,7 @@ Nmap done: 1 IP address (1 host up) scanned in 7.68 seconds
 
 ---
 
-## 📂 Enumeración **_trust_**
+## Enumeración **_trust_**
 
 Se hizo una inspección del sitio web en el puerto **80** y se identificó un servidor apache en el index, se procedió a realizar un discovery de directorios con gobuster.
 
@@ -110,7 +125,7 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2025-10-06 11:22:
 
 ---
 
-## 💥 Explotación **_trust_**
+## Explotación **_trust_**
 
 Con las credenciales obtenidas se realiza el proceso de explotación ingresando a la terminal por medio del puerto abierto con ssh, el resultado fue el siguiente:
 
@@ -118,7 +133,7 @@ Con las credenciales obtenidas se realiza el proceso de explotación ingresando 
 
 ---
 
-## 🔝 Escalación de privilegios **_trust_**
+## Escalada de privilegios **_trust_**
 
 Se analizó el entorno para validar cómo conseguir la escalada de privilegios. Por lo que se buscaron binarios con permisos SUID:
 
@@ -174,7 +189,7 @@ Desde aquí hubo un pequeño problema de **_command not found_** al ejecutar en 
 
 ![SUID](https://i.imgur.com/MN4R7hG.png)
 
-#### 📍 Tunneling (trust -> kali)
+#### Tunneling (trust -> kali)
 
 Al haber identificado una segunda máquina dentro de los hosts de la máquina **_trust_** se creó un tunel que nos permita alcanzar esa segunda máquina desde la atacante
 
@@ -190,7 +205,7 @@ Al haber identificado una segunda máquina dentro de los hosts de la máquina **
 - Se empleó `socat` en un host intermedio `trust` para reenviar conexiones hacia el puerto **3434** del servidor atacante.
   ![SUID](https://i.imgur.com/G2q5tfG.png)
 
-## 📡 Escaneo **_inclusion_**
+## Escaneo **_inclusion_**
 
 Se inició un escaneo con **Nmap** esta vez utilizando proxychains, donde se determinó que el host estaba arriba pero no se pudieron analizar los puertos.
 
@@ -201,7 +216,7 @@ Se hizo una configuración en proxys para el navegador y se intentó acceder des
 ![SUID](https://i.imgur.com/tNcKhct.png)
 ![SUID](https://i.imgur.com/XELdenf.png)
 
-## 📂 Enumeración **_inclusion_**
+## Enumeración **_inclusion_**
 
 Para encontrar directorios ocultos, se empleó **dirb** para hacer un recon rápido el cual arrojó los siguientes resultados:
 
@@ -245,7 +260,7 @@ Inspeccionando la url de `/shop` se detecto una posible vulnerabilidad de **LFI*
 ![Wfuzz](https://i.imgur.com/Y1yVo4n.png)
 ![Wfuzz](https://i.imgur.com/KRXf5xo.png)
 
-## 💥 Explotación **_inclusion_**
+## Explotación **_inclusion_**
 
 Despues de varios intentos con algunos paths se consiguió explotar la vulnerabilidad que revela la lista de usuarios.
 
@@ -277,7 +292,7 @@ Con las credenciales descubiertas se puede acceder con proxychains al ssh de la 
 
 ![Wfuzz](https://i.imgur.com/1djhJld.png)
 
-#### 📍 Tunneling (inclusion -> kali)
+#### Tunneling (inclusion -> kali)
 
 - Dentro de la máquina `inclusion` con el usuario `manchi` se vuelve a implementar el comando `hostname -I` para encontrar los hosts y luego se puede ejecutar el script de **_hostScanner.sh_** para empezar a reconocer host a la máquina, el cual nos permite detectar la máquina **_upload_**.
 
@@ -300,11 +315,11 @@ hostname -I
 
 - Se agregó `127.0.0.1 8090` en el archivo de proxychains junto a la anterior, cambiando también el tipo de chain a `dynamic_chain`.
 
-## 📡 Escaneo **_upload_**
+## Escaneo **_upload_**
 
 Se procede a ejecutar un _Nmap_ al nuevo host encontrado 30.30.30.3 sin embargo no se encontraron resultados, para detectar que el server is up.
 
-## 📂 Enumeración **_upload_**
+## Enumeración **_upload_**
 
 Accediendo por HTTP a `30.30.30.3` se observó una interfaz para subida de ficheros y un directorio `uploads` indexable:
 
@@ -343,7 +358,7 @@ DOWNLOADED: 4612 - FOUND: 2
 
 ```
 
-#### 📍 Tunneling (upload -> inclusion -> trust -> kali)
+#### Tunneling (upload -> inclusion -> trust -> kali)
 
 Para permitir comunicación bidireccional entre `upload` y la máquina atacante se utilizó `socat` para reenviar el puerto **443** a través de los saltos intermedios, habilitando la ejecución de una reverse shell desde `upload` hacia Kali:
 
@@ -353,7 +368,7 @@ Para permitir comunicación bidireccional entre `upload` y la máquina atacante 
 - `trust` en escucha y reenvío del puerto **443** hacia la máquina atacante.  
   ![Wfuzz](https://i.imgur.com/L944HFz.png)
 
-## 💥 Explotación **_upload_**
+## Explotación **_upload_**
 
 Ingresando a `/uploads` desde la web se pudo concluir de que hay una vulnerabilidad de Unrestricted File Upload que podría ser explotada.
 
@@ -567,13 +582,13 @@ sudo nc -nlvp 443
 
 Si todos los túneles está correctamente implementados el reverse shell desde `upload` a la máquina atacante debería llegar sin problemas.
 
-## 🔝 Escalación de privilegios **_upload_**
+## Escalada de privilegios **_upload_**
 
 Lo siguiente es escalar los privilegios por lo que se detecta buscando binarios que el usuario puede ejecutar `/usr/bin/env` por lo que se pudo escalar privilegios abusando del mismo, en [GTFObins](https://gtfobins.github.io/gtfobins/env/) se puede leer más a detalle.
 
 ![Upload](https://i.imgur.com/7GivQNZ.png)
 
-Con esto se consigue vulnerar la máquina final.
+Con esto se consigue vulnerar la máquina final y obtener el root.
 
 ### Impacto
 

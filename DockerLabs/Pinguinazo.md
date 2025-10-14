@@ -2,9 +2,15 @@
 
 Pequeño CTF en modo **easy** de Dockerlabs.
 
+- [Reconocimiento](#reconocimiento)
+- [Escaneo](#escaneo)
+- [Enumeración](#enumeración)
+- [Explotación](#explotación)
+- [Escalada de privilegios](#escalada-de-privilegios)
+
 ---
 
-## 🔎 Reconocimiento
+## Reconocimiento
 
 La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
 Dado que la dirección IP es conocida o fácilmente identificable dentro de este entorno controlado, esta fase se clasifica como **reconocimiento pasivo**.
@@ -13,7 +19,7 @@ Dado que la dirección IP es conocida o fácilmente identificable dentro de este
 
 ---
 
-## 📡 Escaneo
+## Escaneo
 
 Se realizó un escaneo con **Nmap** para identificar puertos abiertos y servicios:
 
@@ -35,7 +41,7 @@ Incluso se observó la dirección MAC del objetivo.
 
 ---
 
-## 📂 Enumeración
+## Enumeración
 
 El siguiente paso fue buscar directorios y recursos ocultos.
 
@@ -66,7 +72,7 @@ Además, la página principal contenía un formulario muy básico, con los sigui
 
 ---
 
-## 💥 Explotación
+## Explotación
 
 Se consideraron dos caminos:
 
@@ -106,7 +112,7 @@ Con Burp Suite (Repeater) se probó leer `/etc/passwd`:
 
 ---
 
-### 🌀 Reverse Shell
+### Reverse Shell
 
 Se intentó una reverse shell usando la inyección SSTI. El payload exitoso fue:
 
@@ -130,7 +136,7 @@ Con esto se obtuvo acceso inicial a la terminal.
 
 ---
 
-## 🔝 Escalación de privilegios
+## Escalada de privilegios
 
 Se buscaron binarios con permisos SUID:
 
