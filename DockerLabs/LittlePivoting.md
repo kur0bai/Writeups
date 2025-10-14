@@ -249,7 +249,7 @@ END_TIME: Wed Oct  8 15:48:37 2025
 DOWNLOADED: 9224 - FOUND: 3
 ```
 
-Inspeccionando la url de `/shop` se detecto una posible vulnerabilidad de **LFI** o **Local File Inclusion** lo cual se decide testear por medio de fuzzing, en esta ocasión con la herramienta **wfuzz**.
+La página `/shop` presentó un parámetro susceptible a **Local File Inclusion (LFI)**; se procedió a fuzzing con `wfuzz` para identificar vectores de inclusión:
 
 ![Shop](https://i.imgur.com/YjOZ0Kb.png)
 
