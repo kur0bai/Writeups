@@ -17,6 +17,8 @@ Dado que la dirección IP es conocida o fácilmente identificable dentro de este
 
 ![Reconocimiento](https://i.imgur.com/rs4PSAQ.png)
 
+<br/>
+
 ---
 
 ## Escaneo
@@ -36,6 +38,8 @@ Resultados principales:
 - Puerto **3000** corriendo aplicación de nodejs con el framework de express.
 
 ![Scan1](https://i.imgur.com/1epCh4F.png)
+
+<br/>
 
 ---
 
@@ -80,6 +84,8 @@ Evidencia de la respuesta del endpoint:
 ![Respuesta1](https://i.imgur.com/XmITKDK.png)
 ![Respuesta2](https://i.imgur.com/A9pU7yY.png)
 
+<br/>
+
 ---
 
 ## Explotación
@@ -97,6 +103,8 @@ Para tener en cuenta; se utilizaron diferentes diccionarios, desde los clásicos
 Teniendo el usuario `lovely` y su password, se ingresa al ssh para entrar a la máquina.
 
 ![Gobuster](https://i.imgur.com/Joocf83.png)
+
+<br/>
 
 ---
 

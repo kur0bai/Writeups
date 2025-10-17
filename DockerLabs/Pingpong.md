@@ -8,6 +8,8 @@ Máquina vulnerable en modo **medium** de Dockerlabs.
 - [Explotación](#explotación)
 - [Escalada de privilegios](#escalada-de-privilegios)
 
+<br/>
+
 ---
 
 ## Reconocimiento
@@ -16,6 +18,8 @@ La máquina objetivo se encuentra correctamente desplegada dentro de la red de l
 Dado que la dirección IP es conocida o fácilmente identificable dentro de este entorno controlado, esta fase se clasifica como **reconocimiento pasivo**.
 
 ![Reconocimiento](https://i.imgur.com/rs4PSAQ.png)
+
+<br/>
 
 ---
 
@@ -36,6 +40,8 @@ Resultados principales:
 - Puerto **5000** abierto corriendo una aplicación en Python (Werkzeug).
 
 ![Scan1](https://i.imgur.com/racpOYG.png)
+
+<br/>
 
 ---
 
@@ -61,6 +67,8 @@ Se pasó al puerto **5000** donde se hayó una aplicación para realizar pings a
 ![Werkzeug1](https://i.imgur.com/37eesfV.png)
 ![Werkzeug1](https://i.imgur.com/MY85DKb.png)
 
+<br/>
+
 ---
 
 ## Explotación
@@ -69,6 +77,8 @@ Gracias a que los resultados fueron positivos, se implementó una reverse shell 
 
 ![Werkzeug1](https://i.imgur.com/s6zQY5h.png)  
 ![Werkzeug2](https://i.imgur.com/sW9IsW7.png)
+
+<br/>
 
 ---
 

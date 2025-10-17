@@ -8,6 +8,8 @@ Pequeña Máquina en modo **medium** de Dockerlabs.
 - [Explotación](#explotación)
 - [Escalada de privilegios](#escalada-de-privilegios)
 
+<br/>
+
 ---
 
 ## Reconocimiento
@@ -23,6 +25,8 @@ WARNING: Cannot open MAC/Vendor file mac-vendor.txt: Permission denied
 Starting arp-scan 1.10.0 with 65536 hosts (https://github.com/royhills/arp-scan)
 172.17.0.2	02:42:ac:11:00:02	(Unknown: locally administered)
 ```
+
+<br/>
 
 ---
 
@@ -59,6 +63,8 @@ Service detection performed. Please report any incorrect results at https://nmap
 # Nmap done at Wed Oct 15 16:09:32 2025 -- 1 IP address (1 host up) scanned in 17.76 seconds
 
 ```
+
+<br/>
 
 ---
 
@@ -167,7 +173,7 @@ SMB                      172.17.0.2      445    AEE0F4D201AC     [+] AEE0F4D201A
 
 ## Explotación
 
-El resultado del anterior bruteforce arrojó una contraseña para el usuario `bob` que luego pudo ser utilizada para conectarse desde el **Smbclient** a la red de recursos compartidos.
+El resultado del anterior bruteforce arrojó una contraseña para el usuario `bob` que luego pudo ser utilizada para conectarse desde el **smbclient** a la red de recursos compartidos.
 
 ```bash
 > smbclient \\\\172.17.0.2\\html -U "bob"%"star"
@@ -187,6 +193,10 @@ Con el comando `get index.html` se obtuvo el fichero y se determinó que era el 
 Desde el navegador se accedió al a url de shell y el resultado fue positivo para realizar una conexión en reversa.
 
 ![Reverse Shell](https://i.imgur.com/UUglTkO.png)
+
+<br/>
+
+---
 
 ## Escalada de privilegios
 

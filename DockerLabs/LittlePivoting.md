@@ -17,6 +17,8 @@ Máquina vulnerable en modo **medium** de Dockerlabs.
 - [Tunneling (upload -> inclusion -> trust -> kali)](#tunneling-upload---inclusion---trust---kali)
 - [Escalada de privilegios (upload)](#escalada-de-privilegios-upload)
 
+<br/>
+
 ---
 
 ## Reconocimiento
@@ -38,6 +40,8 @@ Starting arp-scan 1.10.0 with 256 hosts (https://github.com/royhills/arp-scan)
 1 packets received by filter, 0 packets dropped by kernel
 Ending arp-scan 1.10.0: 256 hosts scanned in 1.966 seconds (130.21 hosts/sec). 1 responded
 ```
+
+<br/>
 
 ---
 
@@ -69,6 +73,8 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 7.68 seconds
 ```
+
+<br/>
 
 ---
 
@@ -123,6 +129,8 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2025-10-06 11:21:
 Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2025-10-06 11:22:23
 ```
 
+<br/>
+
 ---
 
 ## Explotación **_trust_**
@@ -130,6 +138,8 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2025-10-06 11:22:
 Con las credenciales obtenidas se realiza el proceso de explotación ingresando a la terminal por medio del puerto abierto con ssh, el resultado fue el siguiente:
 
 ![Werkzeug1](https://i.imgur.com/BxtqCua.png)
+
+<br/>
 
 ---
 
@@ -189,6 +199,10 @@ Desde aquí hubo un pequeño problema de **_command not found_** al ejecutar en 
 
 ![SUID](https://i.imgur.com/MN4R7hG.png)
 
+<br/>
+
+---
+
 #### Tunneling (trust -> kali)
 
 Al haber identificado una segunda máquina dentro de los hosts de la máquina **_trust_** se creó un tunel que nos permita alcanzar esa segunda máquina desde la atacante
@@ -205,6 +219,10 @@ Al haber identificado una segunda máquina dentro de los hosts de la máquina **
 - Se empleó `socat` en un host intermedio `trust` para reenviar conexiones hacia el puerto **3434** del servidor atacante.
   ![SUID](https://i.imgur.com/G2q5tfG.png)
 
+<br/>
+
+---
+
 ## Escaneo **_inclusion_**
 
 Se inició un escaneo con **Nmap** esta vez utilizando proxychains, donde se determinó que el host estaba arriba pero no se pudieron analizar los puertos.
@@ -215,6 +233,10 @@ Se hizo una configuración en proxys para el navegador y se intentó acceder des
 
 ![SUID](https://i.imgur.com/tNcKhct.png)
 ![SUID](https://i.imgur.com/XELdenf.png)
+
+<br/>
+
+---
 
 ## Enumeración **_inclusion_**
 
@@ -260,6 +282,10 @@ La página `/shop` presentó un parámetro susceptible a **Local File Inclusion 
 ![Wfuzz](https://i.imgur.com/Y1yVo4n.png)
 ![Wfuzz](https://i.imgur.com/KRXf5xo.png)
 
+<br/>
+
+---
+
 ## Explotación **_inclusion_**
 
 Despues de varios intentos con algunos paths se consiguió explotar la vulnerabilidad que revela la lista de usuarios.
@@ -292,6 +318,10 @@ Con las credenciales descubiertas se puede acceder con proxychains al ssh de la 
 
 ![Wfuzz](https://i.imgur.com/1djhJld.png)
 
+<br/>
+
+---
+
 #### Tunneling (inclusion -> kali)
 
 - Dentro de la máquina `inclusion` con el usuario `manchi` se vuelve a implementar el comando `hostname -I` para encontrar los hosts y luego se puede ejecutar el script de **_hostScanner.sh_** para empezar a reconocer host a la máquina, el cual nos permite detectar la máquina **_upload_**.
@@ -314,6 +344,10 @@ hostname -I
   ![Wfuzz](https://i.imgur.com/zDrJBG3.png)
 
 - Se agregó `127.0.0.1 8090` en el archivo de proxychains junto a la anterior, cambiando también el tipo de chain a `dynamic_chain`.
+
+<br/>
+
+---
 
 ## Escaneo **_upload_**
 
@@ -358,6 +392,10 @@ DOWNLOADED: 4612 - FOUND: 2
 
 ```
 
+<br/>
+
+---
+
 #### Tunneling (upload -> inclusion -> trust -> kali)
 
 Para permitir comunicación bidireccional entre `upload` y la máquina atacante se utilizó `socat` para reenviar el puerto **443** a través de los saltos intermedios, habilitando la ejecución de una reverse shell desde `upload` hacia Kali:
@@ -367,6 +405,10 @@ Para permitir comunicación bidireccional entre `upload` y la máquina atacante 
 
 - `trust` en escucha y reenvío del puerto **443** hacia la máquina atacante.  
   ![Wfuzz](https://i.imgur.com/L944HFz.png)
+
+<br/>
+
+---
 
 ## Explotación **_upload_**
 
@@ -582,6 +624,10 @@ sudo nc -nlvp 443
 
 Si todos los túneles está correctamente implementados el reverse shell desde `upload` a la máquina atacante debería llegar sin problemas.
 
+<br/>
+
+---
+
 ## Escalada de privilegios **_upload_**
 
 Lo siguiente es escalar los privilegios por lo que se detecta buscando binarios que el usuario puede ejecutar `/usr/bin/env` por lo que se pudo escalar privilegios abusando del mismo, en [GTFObins](https://gtfobins.github.io/gtfobins/env/) se puede leer más a detalle.
@@ -589,6 +635,10 @@ Lo siguiente es escalar los privilegios por lo que se detecta buscando binarios 
 ![Upload](https://i.imgur.com/7GivQNZ.png)
 
 Con esto se consigue vulnerar la máquina final y obtener el root.
+
+<br/>
+
+---
 
 ### Impacto
 

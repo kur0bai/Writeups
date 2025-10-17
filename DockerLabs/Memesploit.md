@@ -8,14 +8,23 @@ Máquina CTF vulnerable en modo **medium** de Dockerlabs.
 - [Explotación](#explotación)
 - [Escalada de privilegios](#escalada-de-privilegios)
 
+<br/>
+
 ---
 
 ## Reconocimiento
 
 La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
-Dado que la dirección IP es conocida o fácilmente identificable dentro de este entorno controlado, esta fase se clasifica como **reconocimiento pasivo**.
+Para identificarla se realizó el uso de `arp-scan` para identificar los dispositivos en nuestra red docker con la interfaz `docker0`
 
-![Reconocimiento](https://i.imgur.com/rs4PSAQ.png)
+```bash
+sudo arp-scan -I docker0 --localnet
+Interface: docker0, type: EN10MB, MAC: 02:42:77:20:48:b6, IPv4: 172.17.0.1
+Starting arp-scan 1.10.0 with 65536 hosts (https://github.com/royhills/arp-scan)
+172.17.0.2	02:42:ac:11:00:02	(Unknown: locally administered)
+```
+
+<br/>
 
 ---
 
@@ -65,6 +74,8 @@ Host script results:
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 # Nmap done at Thu Sep 25 15:10:03 2025 -- 1 IP address (1 host up) scanned in 17.73 seconds
 ```
+
+<br/>
 
 ---
 
@@ -136,6 +147,8 @@ Se consigue pasar la autenticación y hacemos una inspección del directorio y v
 
 Con esto se obtuvieron las credenciales del secret.
 
+<br/>
+
 ---
 
 ## Explotación
@@ -143,6 +156,8 @@ Con esto se obtuvieron las credenciales del secret.
 Con las credenciales obtenidas se realiza el proceso de explotación ingresando a la terminal por medio del puerto abierto con ssh, el resultado fue el siguiente:
 
 ![Werkzeug1](https://i.imgur.com/dXiDAhu.png)
+
+<br/>
 
 ---
 

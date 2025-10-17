@@ -8,6 +8,8 @@ Pequeño CTF en modo **easy** de Dockerlabs.
 - [Explotación](#explotación)
 - [Escalada de privilegios](#escalada-de-privilegios)
 
+<br/>
+
 ---
 
 ## Reconocimiento
@@ -16,6 +18,8 @@ La máquina objetivo se encuentra correctamente desplegada dentro de la red de l
 Dado que la dirección IP es conocida o fácilmente identificable dentro de este entorno controlado, esta fase se clasifica como **reconocimiento pasivo**.
 
 ![Reconocimiento](https://i.imgur.com/rs4PSAQ.png)
+
+<br/>
 
 ---
 
@@ -38,6 +42,8 @@ Resultados principales:
 ![Scan2](https://i.imgur.com/fZBZZWQ.png)
 
 Incluso se observó la dirección MAC del objetivo.
+
+<br/>
 
 ---
 
@@ -69,6 +75,8 @@ Además, la página principal contenía un formulario muy básico, con los sigui
 
 ![Form1](https://i.imgur.com/KI8LbEo.png)  
 ![Form2](https://i.imgur.com/hekE1S3.png)
+
+<br/>
 
 ---
 
@@ -110,6 +118,8 @@ Con Burp Suite (Repeater) se probó leer `/etc/passwd`:
 
 ✅ Quedó claro que la explotación vía SSTI era más directa y efectiva.
 
+<br/>
+
 ---
 
 ### Reverse Shell
@@ -133,6 +143,8 @@ Se intentó una reverse shell usando la inyección SSTI. El payload exitoso fue:
 ![ReverseShell2](https://i.imgur.com/QNAHOy2.png)
 
 Con esto se obtuvo acceso inicial a la terminal.
+
+<br/>
 
 ---
 

@@ -8,6 +8,8 @@ Pequeño Lab en modo **easy** de dockerlabs.
 - [Explotación](#explotación)
 - [Escalada de privilegios](#escalada-de-privilegios)
 
+<br/>
+
 ---
 
 ## Reconocimiento
@@ -19,6 +21,8 @@ En un escenario real, el reconocimiento pasivo se orienta a recopilar informaci�
 En este caso particular, al tratarse de un laboratorio aislado, la obtención de la IP se considera suficiente para dar inicio a la fase de enumeración activa.
 
 ![enter image description here](https://i.imgur.com/3XmtBs3.png)
+
+<br/>
 
 ---
 
@@ -55,6 +59,8 @@ El escaneo realizado con Nmap reveló que el puerto **80/tcp** se encuentra abie
 Con esta información inicial, se procedió a validar el hallazgo accediendo mediante un navegador a la dirección: `http://172.17.0.2` De esta manera, se confirma la existencia de un servicio web activo en el sistema. A partir de este punto, se iniciará la fase de enumeración web, con el fin de identificar posibles directorios ocultos, archivos sensibles o vulnerabilidades presentes en la aplicación expuesta. que hay un servicio web en efecto.
 
 ![enter image description here](https://i.imgur.com/RAoQPtY.png)
+
+<br/>
 
 ---
 
@@ -98,6 +104,8 @@ Si analizamos nuevamente con el gobuster pero utilizando el directorio de wordpr
 
 ![enter image description here](https://i.imgur.com/MfPg9z8.png)
 
+<br/>
+
 ---
 
 ## Explotación
@@ -137,6 +145,10 @@ Aplicado sería:
 
 Luego de ejecutar el comando en la Web shell, conseguimos establecer conexión con nuestra máquina.
 ![enter image description here](https://i.imgur.com/dpYnHCI.png)
+
+<br/>
+
+---
 
 ### Escalada de privilegios
 
