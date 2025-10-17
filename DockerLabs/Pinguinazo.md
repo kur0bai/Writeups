@@ -10,18 +10,19 @@ Pequeño CTF en modo **easy** de Dockerlabs.
 
 <br/>
 
----
-
 ## Reconocimiento
 
 La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
-Dado que la dirección IP es conocida o fácilmente identificable dentro de este entorno controlado, esta fase se clasifica como **reconocimiento pasivo**.
+Para identificarla se realizó el uso de `arp-scan` para identificar los dispositivos en nuestra red docker con la interfaz `docker0`
 
-![Reconocimiento](https://i.imgur.com/rs4PSAQ.png)
+```bash
+sudo arp-scan -I docker0 --localnet
+Interface: docker0, type: EN10MB, MAC: 02:42:77:20:48:b6, IPv4: 172.17.0.1
+Starting arp-scan 1.10.0 with 65536 hosts (https://github.com/royhills/arp-scan)
+172.17.0.2	02:42:ac:11:00:02	(Unknown: locally administered)
+```
 
 <br/>
-
----
 
 ## Escaneo
 
@@ -44,8 +45,6 @@ Resultados principales:
 Incluso se observó la dirección MAC del objetivo.
 
 <br/>
-
----
 
 ## Enumeración
 
@@ -77,8 +76,6 @@ Además, la página principal contenía un formulario muy básico, con los sigui
 ![Form2](https://i.imgur.com/hekE1S3.png)
 
 <br/>
-
----
 
 ## Explotación
 
@@ -120,8 +117,6 @@ Con Burp Suite (Repeater) se probó leer `/etc/passwd`:
 
 <br/>
 
----
-
 ### Reverse Shell
 
 Se intentó una reverse shell usando la inyección SSTI. El payload exitoso fue:
@@ -145,8 +140,6 @@ Se intentó una reverse shell usando la inyección SSTI. El payload exitoso fue:
 Con esto se obtuvo acceso inicial a la terminal.
 
 <br/>
-
----
 
 ## Escalada de privilegios
 
@@ -182,3 +175,5 @@ Con la shell en la máquina victima se ejecutó con `sudo java magic_shell.java`
 ![SudoJava](https://i.imgur.com/lgH3sZ1.png)
 
 ## ![SudoJava](https://i.imgur.com/wVFMqtT.png)
+
+_Written by **kur0bai**_

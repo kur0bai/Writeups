@@ -19,8 +19,6 @@ Máquina vulnerable en modo **medium** de Dockerlabs.
 
 <br/>
 
----
-
 ## Reconocimiento
 
 Las máquinas objetivo se encuentran correctamente desplegadas dentro de la red de laboratorio (en este caso, utilizando Docker).
@@ -42,8 +40,6 @@ Ending arp-scan 1.10.0: 256 hosts scanned in 1.966 seconds (130.21 hosts/sec). 1
 ```
 
 <br/>
-
----
 
 ## Escaneo **_trust_**
 
@@ -75,8 +71,6 @@ Nmap done: 1 IP address (1 host up) scanned in 7.68 seconds
 ```
 
 <br/>
-
----
 
 ## Enumeración **_trust_**
 
@@ -131,8 +125,6 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2025-10-06 11:22:
 
 <br/>
 
----
-
 ## Explotación **_trust_**
 
 Con las credenciales obtenidas se realiza el proceso de explotación ingresando a la terminal por medio del puerto abierto con ssh, el resultado fue el siguiente:
@@ -140,8 +132,6 @@ Con las credenciales obtenidas se realiza el proceso de explotación ingresando 
 ![Werkzeug1](https://i.imgur.com/BxtqCua.png)
 
 <br/>
-
----
 
 ## Escalada de privilegios **_trust_**
 
@@ -201,8 +191,6 @@ Desde aquí hubo un pequeño problema de **_command not found_** al ejecutar en 
 
 <br/>
 
----
-
 #### Tunneling (trust -> kali)
 
 Al haber identificado una segunda máquina dentro de los hosts de la máquina **_trust_** se creó un tunel que nos permita alcanzar esa segunda máquina desde la atacante
@@ -221,8 +209,6 @@ Al haber identificado una segunda máquina dentro de los hosts de la máquina **
 
 <br/>
 
----
-
 ## Escaneo **_inclusion_**
 
 Se inició un escaneo con **Nmap** esta vez utilizando proxychains, donde se determinó que el host estaba arriba pero no se pudieron analizar los puertos.
@@ -235,8 +221,6 @@ Se hizo una configuración en proxys para el navegador y se intentó acceder des
 ![SUID](https://i.imgur.com/XELdenf.png)
 
 <br/>
-
----
 
 ## Enumeración **_inclusion_**
 
@@ -284,8 +268,6 @@ La página `/shop` presentó un parámetro susceptible a **Local File Inclusion 
 
 <br/>
 
----
-
 ## Explotación **_inclusion_**
 
 Despues de varios intentos con algunos paths se consiguió explotar la vulnerabilidad que revela la lista de usuarios.
@@ -320,8 +302,6 @@ Con las credenciales descubiertas se puede acceder con proxychains al ssh de la 
 
 <br/>
 
----
-
 #### Tunneling (inclusion -> kali)
 
 - Dentro de la máquina `inclusion` con el usuario `manchi` se vuelve a implementar el comando `hostname -I` para encontrar los hosts y luego se puede ejecutar el script de **_hostScanner.sh_** para empezar a reconocer host a la máquina, el cual nos permite detectar la máquina **_upload_**.
@@ -346,8 +326,6 @@ hostname -I
 - Se agregó `127.0.0.1 8090` en el archivo de proxychains junto a la anterior, cambiando también el tipo de chain a `dynamic_chain`.
 
 <br/>
-
----
 
 ## Escaneo **_upload_**
 
@@ -394,8 +372,6 @@ DOWNLOADED: 4612 - FOUND: 2
 
 <br/>
 
----
-
 #### Tunneling (upload -> inclusion -> trust -> kali)
 
 Para permitir comunicación bidireccional entre `upload` y la máquina atacante se utilizó `socat` para reenviar el puerto **443** a través de los saltos intermedios, habilitando la ejecución de una reverse shell desde `upload` hacia Kali:
@@ -407,8 +383,6 @@ Para permitir comunicación bidireccional entre `upload` y la máquina atacante 
   ![Wfuzz](https://i.imgur.com/L944HFz.png)
 
 <br/>
-
----
 
 ## Explotación **_upload_**
 
@@ -626,8 +600,6 @@ Si todos los túneles está correctamente implementados el reverse shell desde `
 
 <br/>
 
----
-
 ## Escalada de privilegios **_upload_**
 
 Lo siguiente es escalar los privilegios por lo que se detecta buscando binarios que el usuario puede ejecutar `/usr/bin/env` por lo que se pudo escalar privilegios abusando del mismo, en [GTFObins](https://gtfobins.github.io/gtfobins/env/) se puede leer más a detalle.
@@ -638,8 +610,8 @@ Con esto se consigue vulnerar la máquina final y obtener el root.
 
 <br/>
 
----
-
 ### Impacto
 
 La combinación de los vectores descritos permitió control total de los hosts y movimiento lateral dentro de la topología del laboratorio. En un entorno de producción las consecuencias equivaldrían a una **comprometida cadena de confianza**, acceso a datos sensibles y capacidad de persistencia.
+
+_Written by **kur0bai**_

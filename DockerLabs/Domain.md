@@ -10,8 +10,6 @@ Pequeña Máquina en modo **medium** de Dockerlabs.
 
 <br/>
 
----
-
 ## Reconocimiento
 
 La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
@@ -27,8 +25,6 @@ Starting arp-scan 1.10.0 with 65536 hosts (https://github.com/royhills/arp-scan)
 ```
 
 <br/>
-
----
 
 ## Escaneo
 
@@ -65,8 +61,6 @@ Service detection performed. Please report any incorrect results at https://nmap
 ```
 
 <br/>
-
----
 
 ## Enumeración
 
@@ -196,8 +190,6 @@ Desde el navegador se accedió al a url de shell y el resultado fue positivo par
 
 <br/>
 
----
-
 ## Escalada de privilegios
 
 Luego de recibir la reverse shell en la máquina Kali, el comando `whoami` reveló el usuario `www-data` por lo que se revisó el archivo `/etc/passwd` para analizar qué usuarios eran capaces de ejecutar `/bin/bash` y así poder obtener una escalada de privilegios.
@@ -273,3 +265,5 @@ root@aee0f4d201ac:/#
 ```
 
 Luego de haber modificado el archivo se utilizó el `su root` y no hubo **input** alguno para ingresar la contraseña, automáticamente se accedió al user `root` y con esto ya se alcanzó el control sobre la máquina.
+
+_Written by **kur0bai**_

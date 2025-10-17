@@ -10,8 +10,6 @@ Máquina CTF vulnerable en modo **medium** de Dockerlabs.
 
 <br/>
 
----
-
 ## Reconocimiento
 
 La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
@@ -25,8 +23,6 @@ Starting arp-scan 1.10.0 with 65536 hosts (https://github.com/royhills/arp-scan)
 ```
 
 <br/>
-
----
 
 ## Escaneo
 
@@ -76,8 +72,6 @@ Service detection performed. Please report any incorrect results at https://nmap
 ```
 
 <br/>
-
----
 
 ## Enumeración
 
@@ -149,8 +143,6 @@ Con esto se obtuvieron las credenciales del secret.
 
 <br/>
 
----
-
 ## Explotación
 
 Con las credenciales obtenidas se realiza el proceso de explotación ingresando a la terminal por medio del puerto abierto con ssh, el resultado fue el siguiente:
@@ -158,8 +150,6 @@ Con las credenciales obtenidas se realiza el proceso de explotación ingresando 
 ![Werkzeug1](https://i.imgur.com/dXiDAhu.png)
 
 <br/>
-
----
 
 ## Escalada de privilegios
 
@@ -195,3 +185,5 @@ Lo siguiente fue cerrar la sesión en la consola de la máquina y volver a logue
 ![root](https://i.imgur.com/SDljfkH.png)
 
 De esta manera se pudo obtener el root del sistema y sus respectivas flags.
+
+_Written by **kur0bai**_

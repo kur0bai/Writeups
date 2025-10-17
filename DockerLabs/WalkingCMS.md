@@ -10,8 +10,6 @@ Pequeño Lab en modo **easy** de dockerlabs.
 
 <br/>
 
----
-
 ## Reconocimiento
 
 Se asume que la máquina objetivo se encuentra correctamente desplegada dentro de nuestra red de laboratorio (en este caso, utilizando Docker).
@@ -23,8 +21,6 @@ En este caso particular, al tratarse de un laboratorio aislado, la obtención de
 ![enter image description here](https://i.imgur.com/3XmtBs3.png)
 
 <br/>
-
----
 
 ## Escaneo
 
@@ -61,8 +57,6 @@ Con esta información inicial, se procedió a validar el hallazgo accediendo med
 ![enter image description here](https://i.imgur.com/RAoQPtY.png)
 
 <br/>
-
----
 
 ### Enumeración
 
@@ -106,8 +100,6 @@ Si analizamos nuevamente con el gobuster pero utilizando el directorio de wordpr
 
 <br/>
 
----
-
 ## Explotación
 
 A continuación, podremos notar que:
@@ -148,8 +140,6 @@ Luego de ejecutar el comando en la Web shell, conseguimos establecer conexión c
 
 <br/>
 
----
-
 ### Escalada de privilegios
 
 Moviéndose al `/home`se pueden buscar archivos en la raíz que permitan ser explotados o ejecutados para conseguir el `root`de la máquina.
@@ -170,3 +160,5 @@ Por lo que si lo aplicamos a nuestra máquina...
 ![enter image description here](https://i.imgur.com/HAivnyT.png)
 
 Logramos comprometerla y obtener el usuario root.
+
+_Written by **kur0bai**_

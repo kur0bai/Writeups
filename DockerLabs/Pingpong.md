@@ -10,18 +10,19 @@ Máquina vulnerable en modo **medium** de Dockerlabs.
 
 <br/>
 
----
-
 ## Reconocimiento
 
 La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
-Dado que la dirección IP es conocida o fácilmente identificable dentro de este entorno controlado, esta fase se clasifica como **reconocimiento pasivo**.
+Para identificarla se realizó el uso de `arp-scan` para identificar los dispositivos en nuestra red docker con la interfaz `docker0`
 
-![Reconocimiento](https://i.imgur.com/rs4PSAQ.png)
+```bash
+sudo arp-scan -I docker0 --localnet
+Interface: docker0, type: EN10MB, MAC: 02:42:77:20:48:b6, IPv4: 172.17.0.1
+Starting arp-scan 1.10.0 with 65536 hosts (https://github.com/royhills/arp-scan)
+172.17.0.2	02:42:ac:11:00:02	(Unknown: locally administered)
+```
 
 <br/>
-
----
 
 ## Escaneo
 
@@ -42,8 +43,6 @@ Resultados principales:
 ![Scan1](https://i.imgur.com/racpOYG.png)
 
 <br/>
-
----
 
 ## Enumeración
 
@@ -69,8 +68,6 @@ Se pasó al puerto **5000** donde se hayó una aplicación para realizar pings a
 
 <br/>
 
----
-
 ## Explotación
 
 Gracias a que los resultados fueron positivos, se implementó una reverse shell con bash para conectar a la terminal.
@@ -79,8 +76,6 @@ Gracias a que los resultados fueron positivos, se implementó una reverse shell 
 ![Werkzeug2](https://i.imgur.com/sW9IsW7.png)
 
 <br/>
-
----
 
 ## Escalada de privilegios
 
@@ -139,3 +134,5 @@ Utilizando el método de comprobación como las veces anteriores, se descubre qu
 ![dpkg](https://i.imgur.com/ItDzxDz.png)
 
 Y es con esto que después de realizar tantos movimientos laterales, se consigue escalar al root.
+
+_Written by **kur0bai**_

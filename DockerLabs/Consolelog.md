@@ -8,18 +8,21 @@ Pequeña Máquina en modo **easy** de Dockerlabs.
 - [Explotación](#explotación)
 - [Escalada de privilegios](#escalada-de-privilegios)
 
----
+<br/>
 
 ## Reconocimiento
 
 La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
-Dado que la dirección IP es conocida o fácilmente identificable dentro de este entorno controlado, esta fase se clasifica como **reconocimiento pasivo**.
+Para identificarla se realizó el uso de `arp-scan` para identificar los dispositivos en nuestra red docker con la interfaz `docker0`
 
-![Reconocimiento](https://i.imgur.com/rs4PSAQ.png)
+```bash
+sudo arp-scan -I docker0 --localnet
+Interface: docker0, type: EN10MB, MAC: 02:42:77:20:48:b6, IPv4: 172.17.0.1
+Starting arp-scan 1.10.0 with 65536 hosts (https://github.com/royhills/arp-scan)
+172.17.0.2	02:42:ac:11:00:02	(Unknown: locally administered)
+```
 
 <br/>
-
----
 
 ## Escaneo
 
@@ -40,8 +43,6 @@ Resultados principales:
 ![Scan1](https://i.imgur.com/1epCh4F.png)
 
 <br/>
-
----
 
 ## Enumeración
 
@@ -86,8 +87,6 @@ Evidencia de la respuesta del endpoint:
 
 <br/>
 
----
-
 ## Explotación
 
 Se consideraró realizar un ataque de fuerza bruta con Hydra para intentar encontrar el usuario que coincidiera con la password. Afortunadamente, después de varios intentos se tuvo éxito y hubo una coincidencia.
@@ -105,8 +104,6 @@ Teniendo el usuario `lovely` y su password, se ingresa al ssh para entrar a la m
 ![Gobuster](https://i.imgur.com/Joocf83.png)
 
 <br/>
-
----
 
 ## Escalada de privilegios
 
@@ -136,3 +133,5 @@ Al editar `/etc/passwd` se eliminó la marca de contraseña (la `x`) del usuario
 ## Conclusión breve
 
 La combinación de ficheros expuestos, secretos embebidos en el código y la presencia de un binario SUID explotable permitieron un compromiso completo de la máquina. Estas fallas son evitables mediante control de despliegue, gestión de secretos y revisión de configuraciones de privilegio.
+
+_Written by **kur0bai**_
