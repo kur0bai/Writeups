@@ -39,6 +39,7 @@ Cada máquina o reto tendrá su propio directorio con el writeup en formato Mark
 | 5   | Memesploit     | Web       | ✅ Done | [Writeup](Memesploit.md)     |
 | 6   | LittlePivoting | Web       | ✅ Done | [Writeup](LittlePivoting.md) |
 | 7   | Domain         | Web       | ✅ Done | [Writeup](Domain.md)         |
+| 8   | FindyourStyle  | Web       | ✅ Done | [Writeup](FindYourStyle.md)  |
 
 _(iré actualizando conforme vaya resolviendo más laboratorios)_
 
