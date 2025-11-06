@@ -1,19 +1,19 @@
 # Memesploit
 
-Máquina CTF vulnerable en modo **medium** de Dockerlabs.
+<center><img src="https://dockerlabs.es/static/images/logos/logo.png" width="150px"></center>
 
-- [Reconocimiento](#reconocimiento)
-- [Escaneo](#escaneo)
-- [Enumeración](#enumeración)
-- [Explotación](#explotación)
-- [Escalada de privilegios](#escalada-de-privilegios)
+## Contents
 
-<br/>
+- [Reconnaissance](#reconnaissance)
+- [Scanning](#scanning)
+- [Enumeration](#enumeration)
+- [Exploitation](#exploitation)
+- [Privilege Escalation](#privilege-escalation)
 
-## Reconocimiento
+## Reconnaissance
 
-La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
-Para identificarla se realizó el uso de `arp-scan` para identificar los dispositivos en nuestra red docker con la interfaz `docker0`
+The target machine is correctly deployed inside the lab network (in this case, using Docker).  
+To identify it, `arp-scan` was used to find devices on our docker network using the `docker0` interface
 
 ```bash
 sudo arp-scan -I docker0 --localnet
@@ -22,24 +22,15 @@ Starting arp-scan 1.10.0 with 65536 hosts (https://github.com/royhills/arp-scan)
 172.17.0.2	02:42:ac:11:00:02	(Unknown: locally administered)
 ```
 
-<br/>
+## Scanning
 
-## Escaneo
-
-Se realizó un escaneo con **Nmap** para identificar puertos abiertos y servicios:
+A **Nmap** scan was performed to identify open ports and services:
 
 ```bash
 nmap -p- --open -sC -sV --min-rate 5000 -n -Pn 172.17.0.2
 ```
 
-El **target** corresponde a la IP de la máquina víctima: **172.17.0.2**
-
-Resultados principales:
-
-- Puerto **80** abierto (Apache)
-- Puerto **139** abierto (Samba)
-- Puerto **445** abierto (Samba).
-- Puerto **22** abierto para ssh.
+The **target** corresponds to the victim machine IP: **172.17.0.2**
 
 ```
 # Nmap 7.95 scan initiated Thu Sep 25 15:09:45 2025 as: /usr/lib/nmap/nmap --privileged -p- --open -sC -sV --min-rate 5000 -n -Pn -o memesploit.txt 172.17.0.2
@@ -71,15 +62,13 @@ Service detection performed. Please report any incorrect results at https://nmap
 # Nmap done at Thu Sep 25 15:10:03 2025 -- 1 IP address (1 host up) scanned in 17.73 seconds
 ```
 
-<br/>
+## Enumeration
 
-## Enumeración
-
-Se hizo una inspección del sitio web en el puerto **80** y se encontró una página animada con algunos textos que podrían ser claves.
+The website on port **80** was inspected and an animated page with several texts that could be clues was found.
 
 ![Scan1](https://i.imgur.com/1cpuR93.png)
 
-El siguiente paso fue buscar directorios y recursos ocultos con **Gobuster**:
+The next step was to search for hidden directories and resources with **Gobuster**:
 
 ```bash
 gobuster dir -u "http://172.17.0.2"   -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt   -t 20 -x php,txt,html,php.bak
@@ -109,7 +98,7 @@ Finished
 
 ```
 
-No fue muy relevante, debido que solo se encontraron dos directorios y uno necesitaba authentication. Por lo que se procedió a revisar los puertos con el servicio de **_SAMBA_** con la intención de vulnerarlo.
+It wasn't very relevant, since only two directories were found and one required authentication. So the next step was to check the ports with the **SAMBA** service in order to try to exploit it.
 
 ```bash
 smbclient -N -L \\\\172.17.0.2
@@ -129,31 +118,27 @@ Unable to connect with SMB1 -- no workgroup available
 
 ```
 
-Se intentó acceder a `share_memehydra` y nos solicitó una contraseña, que se pudo encontrar oculta en el texto de la página principal.
+An attempt was made to access `share_memehydra` and it requested a password, which was found hidden in the main page text.
 
 ![Gobuster](https://i.imgur.com/BheRiE2.png)
 ![Machine](https://i.imgur.com/eurQvnH.png)
 
-Se consigue pasar la autenticación y hacemos una inspección del directorio y vemos que tenemos fichero comprimido `secret.zip` que al intentar descomprimir pide una password que también se pudo encontrar escondida en la página principal.
+Authentication succeeded and the directory was inspected — a compressed file `secret.zip` was found which requested a password when trying to extract; that password was also hidden on the main page.
 
 ![Werkzeug1](https://i.imgur.com/W0f9pjn.png)
 ![Werkzeug1](https://i.imgur.com/aoXmHe4.png)
 
-Con esto se obtuvieron las credenciales del secret.
+With this the secret credentials were obtained.
 
-<br/>
+## Exploitation
 
-## Explotación
-
-Con las credenciales obtenidas se realiza el proceso de explotación ingresando a la terminal por medio del puerto abierto con ssh, el resultado fue el siguiente:
+Using the obtained credentials the exploitation process was carried out by accessing the terminal via the open SSH port; the result was as follows:
 
 ![Werkzeug1](https://i.imgur.com/dXiDAhu.png)
 
-<br/>
+## Privilege Escalation
 
-## Escalada de privilegios
-
-Se analizó el entorno para validar cómo conseguir la escalada de privilegios. Por lo que se buscaron binarios con permisos SUID:
+The environment was analyzed to identify how to achieve privilege escalation. SUID binaries were searched for:
 
 ```bash
 find / -perm -4000 2>/dev/null
@@ -161,14 +146,14 @@ find / -perm -4000 2>/dev/null
 
 ![SUID](https://i.imgur.com/ycy5tII.png)
 
-Los binarios en su mayoría no parecían ser aprovechados para usar el SUID, sin embargo había un servicio de `login_monitor` que podía ser reseteado.
+Most binaries did not seem exploitable for SUID, however there was a `login_monitor` service that could be reset.
 
-Se ubicó el directorio y se listaron los elementos dentro, también se revisaron logs y archivos bash para entender sus funciones.
+The directory was located and its contents listed; logs and bash files were also reviewed to understand their functions.
 
 ![loginmonitor](https://i.imgur.com/6TIRche.png)
 ![loginmonitor](https://i.imgur.com/O5zS4kC.png)
 
-El archivo `actionban.sh` parece generar temp files para establecer ciertos bloqueos o baneos en ips. La falla aquí es la carpeta de configuración `/etc/login_monitor` pertenece a un grupo de `security` del que el usuario `memesploit` hace parte también, esto se puede saber usando el mítico `LinEnum.sh` para enumerar el sistema por medio de scripts y obtener información más detallada, o listando el directorio y usando `id` para comprobar grupos.
+The `actionban.sh` file appears to generate temp files to set certain blocks or bans on IPs. The flaw here is that the configuration folder `/etc/login_monitor` belongs to a `security` group that the `memesploit` user is also part of — this can be verified using the classic `LinEnum.sh` to enumerate the system with scripts and gather more detailed information, or by listing the directory and using `id` to check groups.
 
 ```
 uid=1001(memesploit) gid=1001(memesploit) groups=1001(memesploit),100(users),1003(security)
@@ -176,14 +161,16 @@ uid=1001(memesploit) gid=1001(memesploit) groups=1001(memesploit),100(users),100
 
 ![loginmonitor](https://i.imgur.com/AqBEESS.png)
 
-La idea es establecer `chmod u+s /bin/bash` al final del código para aplicar el SUID al fichero, teniendo en cuenta que es bash.
+The idea is to add `chmod u+s /bin/bash` at the end of the code to apply SUID to the file, given that it is bash.
 
-El fichero original no es writable por lo que se recurrió a `cat actionban.sh` para leerlo y copiarlo al portapapeles, eliminarlo y luego volver a crearlo de manera que ya puede ser modificado.
+The original file is not writable so the approach was to `cat actionban.sh` to read it and copy it to the clipboard, delete it and then recreate it so it can be modified.
 
-Lo siguiente fue cerrar la sesión en la consola de la máquina y volver a loguear. En este caso no fue necesario realizar el **restart**, posiblemente al volver a entrar se haya hecho un trigger en el servicio.
+Next step was to log out of the machine console and log back in. In this case a **restart** wasn't necessary; possibly re-logging triggered the service.
 
 ![root](https://i.imgur.com/SDljfkH.png)
 
-De esta manera se pudo obtener el root del sistema y sus respectivas flags.
+This way root and the respective flags were obtained.
+
+---
 
 _Written by **kur0bai**_

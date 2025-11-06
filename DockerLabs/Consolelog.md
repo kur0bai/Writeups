@@ -1,19 +1,18 @@
 # ConsoleLog
 
-Pequeña Máquina en modo **easy** de Dockerlabs.
+<center><img src="https://dockerlabs.es/static/images/logos/logo.png" width="150px"></center>
 
-- [Reconocimiento](#reconocimiento)
-- [Escaneo](#escaneo)
-- [Enumeración](#enumeración)
-- [Explotación](#explotación)
-- [Escalada de privilegios](#escalada-de-privilegios)
+## Contents
 
-<br/>
+- [Reconnaissance](#reconnaissance)
+- [Scanning](#scanning)
+- [Enumeration](#enumeration)
+- [Exploitation](#exploitation)
+- [Privilege Escalation](#privilege-escalation)
 
-## Reconocimiento
+## Reconnaissance
 
-La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
-Para identificarla se realizó el uso de `arp-scan` para identificar los dispositivos en nuestra red docker con la interfaz `docker0`
+The target machine is deployed inside the lab network (here using Docker). To identify it, `arp-scan` was used to find devices on the `docker0` interface:
 
 ```bash
 sudo arp-scan -I docker0 --localnet
@@ -22,74 +21,62 @@ Starting arp-scan 1.10.0 with 65536 hosts (https://github.com/royhills/arp-scan)
 172.17.0.2	02:42:ac:11:00:02	(Unknown: locally administered)
 ```
 
-<br/>
+## Scanning
 
-## Escaneo
-
-Se realizó un escaneo con **Nmap** para identificar puertos abiertos y servicios:
+An **Nmap** scan was performed to identify open ports and services:
 
 ```bash
 nmap -p- --open -sC -sV --min-rate 5000 -n -Pn 172.17.0.2
 ```
 
-El **target** corresponde a la IP de la máquina víctima: **172.17.0.2**
-
-Resultados principales:
-
-- Puerto **5000** abierto para ssh.
-- Puerto **80** corriendo una aplicación web con Apache.
-- Puerto **3000** corriendo aplicación de nodejs con el framework de express.
+Target IP identified: **172.17.0.2**
 
 ![Scan1](https://i.imgur.com/1epCh4F.png)
 
-<br/>
+## Enumeration
 
-## Enumeración
+Next step was searching for hidden directories and resources.
 
-El siguiente paso fue buscar directorios y recursos ocultos.
-
-Con **Gobuster**:
+Using **Gobuster**:
 
 ```bash
 gobuster dir -u "http://172.17.0.2"   -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt   -t 20 -x php,txt,html,php.bak
 ```
 
-El escaneo reveló un directorio que contiene archivos JavaScript del frontend y referencias a un endpoint llamado `/recurso`.
+The scan revealed a directory containing frontend JavaScript files and references to an endpoint called `/recurso`.
 
 ![Gobuster](https://i.imgur.com/zmVJle6.png)
 
-Al inspeccionar la aplicación web en el navegador, se detectó un mensaje en la consola que hacía referencia a un directorio `recurso` y a un token esperado por el backend.
+Inspecting the web application in the browser console revealed a message referring to a recurso directory and a token expected by the backend.
 
 ![Console message](https://i.imgur.com/bC2z0KO.png)
 
-Posteriormente, la revisión del servidor mostró que el directorio del backend tenía **Directory Listing** habilitado, permitiendo la lectura directa de ficheros en la raíz del servicio.
+Further server inspection showed that the backend directory had **Directory Listing** enabled, allowing direct reading of files from the service root.
 
 ![Directory Listing](https://i.imgur.com/QwUb4sa.png)
 
-Dentro de los archivos expuestos se encontró `server.js`, que implementa un endpoint `POST /recurso`.
+Among the exposed files, `server.js` was found. It implements a **POST** `/recurso` endpoint.
 
 ![server.js](https://i.imgur.com/ZNjSEUB.png)
 
-El endpoint compara un token recibido con un valor **hardcoded** (`tokentraviesito`) y, en caso de coincidencia, devuelve en respuesta una contraseña en texto claro: `lapassworddebackupmaschingonadetodas`.
+The endpoint compares a received token with a hardcoded value (tokentraviesito) and, if it matches, returns a password in plaintext: `lapassworddebackupmaschingonadetodas`.
 
-> **Observación:** incluso sin listar directorios, un `POST` correctamente formado a `/recurso` con el token en el body habría devuelto la contraseña.
+> **Note**: Even without directory listing, a correctly formed **POST** to `/recurso` with the token in the request body would have returned the password.
 
-Ejemplo PoC (conceptual):
+**PoC Example**
 
 ```bash
 curl -s -X POST http://172.17.0.2/recurso   -H 'Content-Type: application/json'   -d '{"token":"tokentraviesito"}'
 ```
 
-Evidencia de la respuesta del endpoint:
+Evidence of the endpoint response:
 
 ![Respuesta1](https://i.imgur.com/XmITKDK.png)
 ![Respuesta2](https://i.imgur.com/A9pU7yY.png)
 
-<br/>
+## Exploitation
 
-## Explotación
-
-Se consideraró realizar un ataque de fuerza bruta con Hydra para intentar encontrar el usuario que coincidiera con la password. Afortunadamente, después de varios intentos se tuvo éxito y hubo una coincidencia.
+A brute-force attack with Hydra was considered to find a username matching the discovered password. After several attempts, the attack succeeded and a valid credential pair was found.
 
 ```bash
 hydra -L /usr/share/wordlists/rockyou.txt -p "lapassworddebackupmaschingonadetodas" ssh://172.17.0.2:5000 -t 4
@@ -97,17 +84,15 @@ hydra -L /usr/share/wordlists/rockyou.txt -p "lapassworddebackupmaschingonadetod
 
 ![Hydra](https://i.imgur.com/UPEkHak.png)
 
-Para tener en cuenta; se utilizaron diferentes diccionarios, desde los clásicos de la seclists hasta el rockyou, la idea es intentar con varios siempre y cuando el target no tenga protección contra bruteforce y blacklists.
+Note: different wordlists were used (Seclists, rockyou, etc.). The idea is to try several lists as long as the target lacks brute-force protection or blacklists.
 
-Teniendo el usuario `lovely` y su password, se ingresa al ssh para entrar a la máquina.
+With username `lovely` and the discovered password, SSH access to the target was obtained:
 
 ![Gobuster](https://i.imgur.com/Joocf83.png)
 
-<br/>
+## Privilege Escalation
 
-## Escalada de privilegios
-
-Para escalar privilegios se realizó un inventario de binarios con el bit **SUID** establecido:
+To escalate privileges, an inventory of binaries with the **SUID** bit set was performed:
 
 ```bash
 find / -perm -4000 2>/dev/null
@@ -115,23 +100,25 @@ find / -perm -4000 2>/dev/null
 
 ![SUID](https://i.imgur.com/IpIBceK.png)
 
-Se identificó `/usr/bin/nano` con permisos SUID. En este laboratorio, ejecutar `nano` con SUID permitió editar ficheros sensibles del sistema con privilegios elevados.
+`/usr/bin/nano` was identified with SUID permissions. In this lab, running nano under SUID allowed editing sensitive system files with elevated privileges.
 
-Comando empleado para explotar la condición:
+The following command was used to exploit this condition:
 
 ```bash
 /usr/bin/nano /etc/passwd -l
 ```
 
-Al editar `/etc/passwd` se eliminó la marca de contraseña (la `x`) del usuario `root` — procedimiento realizado únicamente en el entorno de laboratorio con fines demostrativos. Tras guardar los cambios se ejecutó `su` y se obtuvo acceso como `root` sin requerir contraseña.
+While editing `/etc/passwd`, the password marker (x) for the root user was removed — a procedure performed only in the lab for demonstration purposes. After saving changes, su was executed and root access was obtained without a password.
 
 ![Editar /etc/passwd con nano SUID](https://i.imgur.com/Pz3HDD0.png)
 ![Obtener root](https://i.imgur.com/QPgVRQU.png)
 
-**Resultado:** compromiso total de la máquina (user + root).
+**Result:** full system compromise (user and root).
 
-## Conclusión breve
+## Conclusion
 
-La combinación de ficheros expuestos, secretos embebidos en el código y la presencia de un binario SUID explotable permitieron un compromiso completo de la máquina. Estas fallas son evitables mediante control de despliegue, gestión de secretos y revisión de configuraciones de privilegio.
+Exposed files, secrets embedded in source code, and a SUID-enabled binary allowed total compromise of the machine. These issues can be avoided through proper deployment controls, secret management, and careful privilege configuration.
+
+---
 
 _Written by **kur0bai**_

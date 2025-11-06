@@ -1,19 +1,19 @@
 # FindYourStyle
 
-Pequeña Máquina en modo **easy** de Dockerlabs.
+<center><img src="https://dockerlabs.es/static/images/logos/logo.png" width="150px"></center>
 
-- [Reconocimiento](#reconocimiento)
-- [Escaneo](#escaneo)
-- [Enumeración](#enumeración)
-- [Explotación](#explotación)
-- [Escalada de privilegios](#escalada-de-privilegios)
+## Contents
 
-<br/>
+- [Reconnaissance](#reconnaissance)
+- [Scanning](#scanning)
+- [Enumeration](#enumeration)
+- [Exploitation](#exploitation)
+- [Privilege Escalation](#privilege-escalation)
 
-## Reconocimiento
+## Reconnaissance
 
-La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
-Para identificarla se realizó el uso de `arp-scan` para identificar los dispositivos en nuestra red docker con la interfaz `docker0`
+The target machine is correctly deployed inside the lab network (in this case, using Docker).  
+To identify it, `arp-scan` was used to find devices on our docker network using the `docker0` interface
 
 ```bash
 sudo arp-scan -I docker0 --localnet
@@ -24,11 +24,9 @@ Starting arp-scan 1.10.0 with 65536 hosts (https://github.com/royhills/arp-scan)
 172.17.0.3	02:46:tr:15:00:02	(Unknown: locally administered)
 ```
 
-<br />
+## Scanning
 
-## Escaneo
-
-Se realizó un escaneo con **Nmap** para identificar puertos abiertos y servicios:
+A **Nmap** scan was performed to identify open ports and services:
 
 ```
 > nmap 172.17.0.3 -p- -sV -sC -Pn --min-rate 5000
@@ -54,17 +52,15 @@ Nmap done: 1 IP address (1 host up) scanned in 11.07 seconds
 
 ```
 
-Indicando un servicio corriendo en el puerto **80** de **Drupal**, un CMS en su versión 8.
+Indicating a service running on port **80** using **Drupal**, a CMS in version 8.
 
-<br/>
+## Enumeration
 
-## Enumeración
-
-Se realizó una inspección al servidor web desde el navegador, buscando posibles vulnerabilidades, a su vez se determinó que la versión específica de Drupal era la **8.5.0**
+The web server was inspected from a browser looking for potential vulnerabilities, and the specific Drupal version was determined to be **8.5.0**
 
 ![Drupal](https://i.imgur.com/yRbVifq.png)
 
-Se enumeró con **Gobuster**, al encontrar algunos errores se establecieron filtros al momento de ejecutar nuevamente, debido a que arrojó muchos resultados pero se considerarons los códigos de response desde `200` a `300`.
+Directory enumeration was run with **Gobuster**; after encountering many results, filters were applied to consider only response codes from `200` to `300`.
 
 ```bash
 > gobuster dir -u "172.17.0.3" -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -x php,txt,html,php.bak -t 20 -o gobuster.txt | grep -v "(Status: 403)"
@@ -111,40 +107,38 @@ Finished
 ===============================================================
 ```
 
-Se encontró un directorio user que indicaba un formulario de 3 pestañas que ejecutaba diferentes acciones para gestionar usuarios y que al parecer tenía algunos detalles de **Insecure Design** ya que se pudo confirmar la existencia en base de datos del usuario.
+A `user` directory was found containing a 3-tab form that performed different actions to manage users. It appeared to have **Insecure Design** issues since the existence of the user in the database could be confirmed.
 
 ![Drupal](https://i.imgur.com/H2N9VRt.png)
 
 ![Drupal](https://i.imgur.com/8yRf0VG.png)
 
-Se hizo revisión de otros archivos como `robots.txt` y el `install.php` donde se determinó que la versión instalada era la **8.5.0**
+Other files such as `robots.txt` and `install.php` were reviewed and confirmed the installed version was **8.5.0**
 
 ![Drupal](https://i.imgur.com/jlTTSxk.png)
 
-Gracias a esto se pudo revisar información un poco más detallada de las **CVES** encontradas para esta versión y al parecer hay un **RCE** que afecta al core y puede ser inyectado desde los formularios, en este caso puede ser desde `/Users` así que se realizaron algunos estudios de **PoC** para replicar en el target con burpsuite.
+Thanks to this, further research into CVEs affecting this version revealed an **RCE** that impacts the core and can be injected from forms — in this case possibly via `/Users` — so PoC tests were prepared to reproduce it against the target using Burp Suite.
 
 ![Drupal](https://i.imgur.com/e06L0bw.png)
 
 ![Drupal](https://i.imgur.com/sSFsjfs.png)
 
-<br />
+## Exploitation
 
-## Explotación
-
-Por otro lado se incluyó búsqueda de payloads referentes a la **CVE** y versión con metasploit y se encontraron hallazgos interesantes, como el `Druppalgeddon2` que estaba escrito en ruby, sin embargo se realizó una prueba con meterpreter y el resultado fue positivo.
+Additionally, payload searches for the relevant **CVE** and version were performed in Metasploit, turning up interesting findings such as `Drupalgeddon2` (written in Ruby). A test using Meterpreter produced a positive result.
 
 ![Metasploit](https://i.imgur.com/TyzBFWL.png)
 ![Metasploit](https://i.imgur.com/TuPpEbG.png)
 
-Al ejecutar el exploit se consiguió una sessión en meterpreter de esta manera se procede a explotar y conectarse a la máquina.
+Executing the exploit provided a Meterpreter session, allowing further actions and connection to the machine.
 
 ![Metasploit](https://i.imgur.com/wPNi4Ky.png)
 
-Luego con el comando `whoami` se determinó que se inició la shell con el usuario `www-data` por lo que se buscó usuarios haciendo un `cat /etc/passwd` para obtener posibles usuarios que tengan acceso al `/bin/bash` y el resultado arrojó que por medio de el usuario `ballenita` se podría obtener.
+Then, using `whoami` it was determined the shell was running as `www-data`, so `/etc/passwd` was inspected to find potential users with `/bin/bash` access — the user `ballenita` was identified as a candidate.
 
 ![Ballenita](https://i.imgur.com/guwYW1T.png)
 
-Lo siguiente era encontrar la contraseña y se realizó enumeraciones dentro del sistema de archivos que se consideraran importantes, incluyendo configuraciones, el resultado más acertado fue el de la misma configuración del Drupal.
+The next step was to find the password. Filesystem enumeration focused on important configurations, and the most relevant result was the Drupal settings file.
 
 ```bash
 find / -name settings.php 2>/dev/null
@@ -155,13 +149,11 @@ find / -name settings.php 2>/dev/null
 
 ![Ballenita](https://i.imgur.com/p2r1r1N.png)
 
-Con esto se consiguió la contraseña para la configuración de base de datos **mysql** y el usuario `ballenita`.
+This revealed the database MySQL configuration password and the `ballenita` user.
 
-<br />
+## Privilege Escalation
 
-## Escalada de privilegios
-
-Lo siguiente fue realizar un `su ballenita` para cambiar de usuario utilizando la contraseña previamente obtenida del archivo de configuración.
+Next, `su ballenita` was used to switch users with the password obtained from the configuration file.
 
 ```bash
 www-data@430d587770d2:/var/www/html$ su ballenita
@@ -170,10 +162,12 @@ Password: ballenitafeliz
 ballenita@430d587770d2:
 ```
 
-Lo siguiente fue ejecutar el comando `sudo -l` para revisar qué binarios tenía permitido ejecutar y si no se encontraba ningún resultado se procedería a buscar binarios con SUID, afortunadamente se halló `/bin/ls` y `/bin/grep`, con los cuales se hizo el intento de acceder al directorio de `/root` y el resultado fue positivo, obteniendo la contraseña del mismo.
+Then `sudo -l` was executed to check allowed binaries; if nothing was allowed, SUID binaries would be searched. Fortunately, `/bin/ls` and `/bin/grep` were found, which were used to access `/root` and retrieve the root password.
 
 ![Ballenita](https://i.imgur.com/cf2kQdw.png)
 
-De esta manera se consiguió escalar y obtener el control total de la máquina.
+This allowed escalation and full control of the machine.
+
+---
 
 _Written by **kur0bai**_

