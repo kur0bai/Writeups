@@ -21,17 +21,18 @@ These labs (Dockerlabs, HackerLabs, HackTheBox) let you deploy and practice cybe
 
 ## Complete Writeups List (All)
 
-| #   | Machine / Challenge | Platform   | Category | Status  | Link                                     |
-| --- | ------------------- | ---------- | -------- | ------- | ---------------------------------------- |
-| 1   | WalkingCMS          | DockerLabs | Web      | ✅ Done | [Writeup](DockerLabs/WalkingCMS.pdf)     |
-| 2   | Pinguinazo          | DockerLabs | Web      | ✅ Done | [Writeup](DockerLabs/Pinguinazo.pdf)     |
-| 3   | Consolelog          | DockerLabs | Web      | ✅ Done | [Writeup](DockerLabs/ConsoleLog.pdf)     |
-| 4   | Pingpong            | DockerLabs | Web      | ✅ Done | [Writeup](DockerLabs/Pingpong.pdf)       |
-| 5   | Memesploit          | DockerLabs | Web      | ✅ Done | [Writeup](DockerLabs/Memesploit.pdf)     |
-| 6   | LittlePivoting      | DockerLabs | Web      | ✅ Done | [Writeup](DockerLabs/LittlePivoting.pdf) |
-| 7   | Domain              | DockerLabs | Web      | ✅ Done | [Writeup](DockerLabs/Domain.pdf)         |
-| 8   | FindyourStyle       | DockerLabs | Web      | ✅ Done | [Writeup](DockerLabs/FindYourStyle.pdf)  |
-| 9   | Microchoft          | HackerLabs | Web      | ✅ Done | [Writeup](HackerLabs/Microchoft.pdf)     |
+| #   | Machine / Challenge | Platform     | Category | Status  | Link                                     |
+| --- | ------------------- | ------------ | -------- | ------- | ---------------------------------------- |
+| 1   | WalkingCMS          | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/WalkingCMS.pdf)     |
+| 2   | Pinguinazo          | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/Pinguinazo.pdf)     |
+| 3   | Consolelog          | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/ConsoleLog.pdf)     |
+| 4   | Pingpong            | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/Pingpong.pdf)       |
+| 5   | Memesploit          | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/Memesploit.pdf)     |
+| 6   | LittlePivoting      | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/LittlePivoting.pdf) |
+| 7   | Domain              | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/Domain.pdf)         |
+| 8   | FindyourStyle       | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/FindYourStyle.pdf)  |
+| 9   | Microchoft          | HackerLabs   | Web      | ✅ Done | [Writeup](HackerLabs/Microchoft.pdf)     |
+| 10  | Expressway          | Hack The Box | Web      | ✅ Done | [Writeup](HackTheBox/ExpressWay.pdf)     |
 
 _(I’ll keep this updated as I solve more labs)_
 
