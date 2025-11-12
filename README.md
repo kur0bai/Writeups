@@ -19,7 +19,7 @@ These labs (Dockerlabs, HackerLabs, HackTheBox) let you deploy and practice cybe
 
 ---
 
-## Complete Writeups List (All)
+## Complete Writeups List
 
 | #   | Machine / Challenge | Platform     | Category | Status  | Link                                     |
 | --- | ------------------- | ------------ | -------- | ------- | ---------------------------------------- |
@@ -28,12 +28,13 @@ These labs (Dockerlabs, HackerLabs, HackTheBox) let you deploy and practice cybe
 | 3   | Consolelog          | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/ConsoleLog.pdf)     |
 | 4   | Pingpong            | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/Pingpong.pdf)       |
 | 5   | Memesploit          | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/Memesploit.pdf)     |
-| 6   | LittlePivoting      | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/LittlePivoting.pdf) |
+| 6   | LittlePivoting      | DockerLabs   | Linux    | ✅ Done | [Writeup](DockerLabs/LittlePivoting.pdf) |
 | 7   | Domain              | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/Domain.pdf)         |
 | 8   | FindyourStyle       | DockerLabs   | Web      | ✅ Done | [Writeup](DockerLabs/FindYourStyle.pdf)  |
 | 9   | Expressway          | Hack The Box | Web      | ✅ Done | [Writeup](HackTheBox/ExpressWay.pdf)     |
 | 10  | Microchoft          | HackerLabs   | Windows  | ✅ Done | [Writeup](HackerLabs/Microchoft.pdf)     |
 | 11  | Cocido Andaluz      | HackerLabs   | Windows  | ✅ Done | [Writeup](HackerLabs/CocidoAndaluz.pdf)  |
+| 12  | TomGhost            | TryHackMe    | Linux    | ✅ Done | [Writeup](TryHackMe/TomGhost.pdf)        |
 
 _(I’ll keep this updated as I solve more labs)_
 
