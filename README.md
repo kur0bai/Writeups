@@ -35,6 +35,7 @@ These labs (Dockerlabs, HackerLabs, HackTheBox) let you deploy and practice cybe
 | 10  | Microchoft          | HackerLabs   | Windows  | ✅ Done | [Writeup](HackerLabs/Microchoft.pdf)     |
 | 11  | Cocido Andaluz      | HackerLabs   | Windows  | ✅ Done | [Writeup](HackerLabs/CocidoAndaluz.pdf)  |
 | 12  | TomGhost            | TryHackMe    | Linux    | ✅ Done | [Writeup](TryHackMe/TomGhost.pdf)        |
+| 13  | Flatline            | TryHackMe    | Windows  | ✅ Done | [Writeup](TryHackMe/Flatline.pdf)        |
 
 _(I’ll keep this updated as I solve more labs)_
 
