@@ -37,6 +37,7 @@ These labs (Dockerlabs, HackerLabs, HackTheBox) let you deploy and practice cybe
 | 12  | TomGhost            | TryHackMe    | Linux    | ✅ Done | [Writeup](TryHackMe/TomGhost.pdf)        |
 | 13  | Flatline            | TryHackMe    | Windows  | ✅ Done | [Writeup](TryHackMe/Flatline.pdf)        |
 | 14  | Archangel           | TryHackMe    | Web      | ✅ Done | [Writeup](TryHackMe/Archangel.pdf)       |
+| 15  | RootMe              | TryHackMe    | Web      | ✅ Done | [Writeup](TryHackMe/RootMe.pdf)          |
 
 _(I’ll keep this updated as I solve more labs)_
 
